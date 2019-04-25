@@ -6,12 +6,12 @@ import (
 )
 
 type SimpleJob struct {
-	Name       string         `json: "name"`
-	Namespace  string         `json: "namespace"`
-	Containers []v1.Container `json: "containers"`
-	Scheduled  bool           `json: "scheduled"`
-	MaxRetries int32          `json: "maxRetries"`
-	Cron       string         `json: "cron,omitempty"`
+	Name       string         `json:"name"`
+	Namespace  string         `json:"namespace"`
+	Containers []v1.Container `json:"containers"`
+	Scheduled  bool           `json:"scheduled"`
+	MaxRetries int32          `json:"maxRetries"`
+	Cron       string         `json:"cron,omitempty"`
 }
 
 func (sj SimpleJob) CreateObjectMeta() metav1.ObjectMeta {
