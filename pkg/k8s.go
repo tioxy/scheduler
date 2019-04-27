@@ -4,12 +4,31 @@ import (
 	batchv1 "k8s.io/api/batch/v1"
 	batchv1beta1 "k8s.io/api/batch/v1beta1"
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
 )
 
 var err error
 
 type KubernetesAPI struct {
 	Client kubernetes.Interface
+}
+
+func CreateKubernetesAPI() KubernetesAPI {
+	config, err := rest.InClusterConfig()
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	clientSet, err := kubernetes.NewForConfig(config)
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	return KubernetesAPI{
+		Client: clientSet,
+	}
 }
 
 func (k KubernetesAPI) CreateJob(sj SimpleJob) error {
