@@ -36,3 +36,11 @@ func (sj SimpleJob) createJobSpec() batchv1.JobSpec {
 		BackoffLimit: &sj.MaxRetries,
 	}
 }
+
+func (sj SimpleJob) IsScheduled() bool {
+	if sj.Cron != "" {
+		return true
+	} else {
+		return false
+	}
+}
