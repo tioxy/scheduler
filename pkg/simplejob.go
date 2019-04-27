@@ -19,7 +19,8 @@ func (sj SimpleJob) createObjectMeta() metav1.ObjectMeta {
 		Name:      sj.Name,
 		Namespace: sj.Namespace,
 		Labels: map[string]string{
-			"job": sj.Name,
+			"job":        sj.Name,
+			"created-by": "tioxy/scheduler",
 		},
 	}
 }
