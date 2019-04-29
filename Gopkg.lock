@@ -10,12 +10,20 @@
   version = "v1.1.1"
 
 [[projects]]
-  digest = "1:f1f2bd73c025d24c3b93abf6364bccb802cf2fdedaa44360804c67800e8fab8d"
+  digest = "1:36a5ff9459163d104f2af9776c8db63f3eb4339f527a00a9835c8d562eb116ba"
   name = "github.com/evanphx/json-patch"
   packages = ["."]
   pruneopts = "UT"
-  revision = "72bf35d0ff611848c1dc9df0f976c81192392fa5"
-  version = "v4.1.0"
+  revision = "5858425f75500d40c52783dce87d085a483ce135"
+  version = "v4.2.0"
+
+[[projects]]
+  digest = "1:4e65420ca90a2c87b051b44ac6583971d9d23f405c536a3e5323edc9f4a46f91"
+  name = "github.com/gin-contrib/logger"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "0b3d4131bf19ad686caa625663ac1797f8bbdc70"
+  version = "v0.0.1"
 
 [[projects]]
   branch = "master"
@@ -116,6 +124,19 @@
   version = "1.0.1"
 
 [[projects]]
+  digest = "1:fb63fb6cb9cf7310c6bd83998cc430ee5af1ec52612572ecb42c7aad74bd3598"
+  name = "github.com/rs/zerolog"
+  packages = [
+    ".",
+    "internal/cbor",
+    "internal/json",
+    "log",
+  ]
+  pruneopts = "UT"
+  revision = "acf3980132bfcdc48638724e6e3d9e5749b85999"
+  version = "v1.14.3"
+
+[[projects]]
   digest = "1:d0072748c62defde1ad99dde77f6ffce492a0e5aea9204077e497c7edfb86653"
   name = "github.com/ugorji/go"
   packages = ["codec"]
@@ -129,7 +150,7 @@
   name = "golang.org/x/crypto"
   packages = ["ssh/terminal"]
   pruneopts = "UT"
-  revision = "c05e17bb3b2dca130fc919668a96b4bec9eb9442"
+  revision = "a29dc8fdc73485234dbef99ebedb95d2eced08de"
 
 [[projects]]
   branch = "master"
@@ -159,17 +180,17 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:656ce95b4cdf841c00825f4cb94f6e0e1422d7d6faaf3094e94cd18884a32251"
+  digest = "1:38fc62caae4ecfec54e6047306fdf39210358fefce36fd9ed8e4d008fe150238"
   name = "golang.org/x/sys"
   packages = [
     "unix",
     "windows",
   ]
   pruneopts = "UT"
-  revision = "16072639606ea9e22c7d86e4cbd6af6314f4193c"
+  revision = "d89cdac9e8725f2aefce25fcbfef41134c9ad412"
 
 [[projects]]
-  digest = "1:f4ea3f623a07a2602bb9c1624d6dc7d291261278ba2484508fac559dc7926048"
+  digest = "1:8d8faad6b12a3a4c819a3f9618cb6ee1fa1cfc33253abeeea8b55336721e3405"
   name = "golang.org/x/text"
   packages = [
     "collate",
@@ -190,8 +211,8 @@
     "unicode/rangetable",
   ]
   pruneopts = "UT"
-  revision = "c942b20a5d85b458c4dce1589326051d85e25d6d"
-  version = "v0.3.1"
+  revision = "342b2e1fbaa52c93f31447ad2c6abc048c63e475"
+  version = "v0.3.2"
 
 [[projects]]
   branch = "master"
@@ -449,7 +470,7 @@
   name = "k8s.io/kube-openapi"
   packages = ["pkg/util/proto"]
   pruneopts = "UT"
-  revision = "6b3d3b2d5666c5912bab8b7bf26bf50f75a8f887"
+  revision = "c5d3b0f4bee0a2c36e3f715a6b15dcc231c64adc"
 
 [[projects]]
   branch = "master"
@@ -471,12 +492,17 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
+    "github.com/gin-contrib/logger",
     "github.com/gin-gonic/gin",
+    "github.com/rs/zerolog",
+    "github.com/rs/zerolog/log",
     "k8s.io/api/batch/v1",
+    "k8s.io/api/batch/v1beta1",
     "k8s.io/api/core/v1",
     "k8s.io/apimachinery/pkg/apis/meta/v1",
     "k8s.io/client-go/kubernetes",
     "k8s.io/client-go/kubernetes/fake",
+    "k8s.io/client-go/rest",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1
