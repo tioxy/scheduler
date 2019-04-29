@@ -37,6 +37,8 @@ docker-build:
 			-t "$(CONTAINER_IMAGE):$(CONTAINER_TAG)" \
 			-f $(CONTAINER_FILE) $(CONTAINER_CONTEXT) \
 			--build-arg IN_BINARY=$(BINARY_UNIX)
+docker-push:
+		docker image push "$(CONTAINER_IMAGE):$(CONTAINER_TAG)"
 
 gen-image:
 		$(MAKE) -f $(MAKEFILE) test
