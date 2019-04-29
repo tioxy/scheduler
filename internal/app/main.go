@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -25,7 +26,7 @@ func main() {
 		v1.DELETE("/:name", deleteSimpleJob)
 	}
 
-	r.Run(":8080")
+	r.Run()
 }
 
 func root(c *gin.Context) {
@@ -43,6 +44,7 @@ func createSimpleJob(c *gin.Context) {
 	sj := scheduler.SimpleJob{}
 
 	if err := c.BindJSON(sj); err != nil {
+		fmt.Println(err)
 		c.AbortWithStatus(400)
 		return
 	}
@@ -69,6 +71,13 @@ func updateSimpleJob(c *gin.Context) {
 }
 
 func healthCheck(c *gin.Context) {
+	c.JSON(
+		http.StatusOK,
+		gin.H{
+			"status":  http.StatusOK,
+			"message": "ok",
+		},
+	)
 
 }
 
