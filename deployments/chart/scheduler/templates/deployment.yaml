@@ -43,6 +43,10 @@ spec:
         env:
         - name: PORT
           value: "{{ .Values.image.port }}"
+        {{ if not .Values.image.debug }}
+        - name: GIN_MODE
+          value: release
+        {{ end }}
       {{ if .Values.ingress.enabled }}
       serviceAccountName: {{ .Release.Name }}
       automountServiceAccountToken: true

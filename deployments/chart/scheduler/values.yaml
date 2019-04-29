@@ -5,6 +5,7 @@ image:
   tag: latest
   pullPolicy: Always
   port: 8080
+  debug: true
 
 service:
   type: ClusterIP
