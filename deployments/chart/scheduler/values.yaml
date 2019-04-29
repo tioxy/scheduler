@@ -1,0 +1,24 @@
+replicaCount: 1
+
+image:
+  repository: tioxy/scheduler
+  tag: latest
+  pullPolicy: Always
+  port: 8080
+
+service:
+  type: ClusterIP
+  port: 8080
+
+ingress:
+  enabled: true
+  annotations: {}
+  hosts:
+    - host: scheduler.tioxy.com
+      paths:
+        - "/"
+
+resources: {}
+
+rbac:
+  enabled: true

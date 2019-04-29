@@ -1,0 +1,17 @@
+apiVersion: v1
+name: scheduler
+version: 0.1.0
+description: Simple API to schedule Simple Jobs on top of Kubernetes
+keywords:
+  - jobs
+  - cronjobs
+  - api
+  - labs
+home: https://github.com/tioxy/scheduler
+sources:
+  - https://github.com/tioxy/scheduler
+maintainers:
+  - name: Gabriel Tiossi
+    email: gabrieltiossi@gmail.com
+    url: https://tioxy.com
+engine: gotpl
