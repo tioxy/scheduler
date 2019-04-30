@@ -3,15 +3,40 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"os"
 
+	ginLogger "github.com/gin-contrib/logger"
 	"github.com/gin-gonic/gin"
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 	scheduler "github.com/tioxy/scheduler/pkg"
 )
 
 var err error
 
 func main() {
-	r := gin.Default()
+	r := gin.New()
+
+	// Control zerolog INFO/DEBUG by Gin env
+	zerolog.SetGlobalLevel(zerolog.InfoLevel)
+	if gin.IsDebugging() {
+		zerolog.SetGlobalLevel(zerolog.DebugLevel)
+	}
+
+	r.Use(ginLogger.SetLogger())
+
+	// Custom logger
+	subLog := zerolog.New(os.Stdout).With().Str("app", "scheduler").Logger()
+
+	r.Use(
+		ginLogger.SetLogger(
+			ginLogger.Config{
+				Logger:   &subLog,
+				UTC:      true,
+				SkipPath: []string{"/healthz"},
+			},
+		),
+	)
 
 	r.GET("/", root)
 	r.GET("/healthz", healthCheck)
@@ -41,21 +66,53 @@ func getSimpleJobs(c *gin.Context) {
 }
 
 func createSimpleJob(c *gin.Context) {
-	sj := scheduler.SimpleJob{}
+	sj := &scheduler.SimpleJob{}
 
 	if err := c.BindJSON(sj); err != nil {
-		fmt.Println(err)
-		c.AbortWithStatus(400)
+		log.Warn().Msg(
+			fmt.Sprintf("Could not parse JSON for SimpleJob | %v", err),
+		)
+		c.JSON(
+			http.StatusBadRequest,
+			gin.H{
+				"status":  http.StatusBadRequest,
+				"message": "could not parse json",
+			},
+		)
 		return
 	}
 
 	k8s := scheduler.CreateKubernetesAPI()
 
 	if sj.IsScheduled() {
-		k8s.CreateCronJob(sj)
+		log.Info().Msg("Creating CronJob from SimpleJob=" + sj.Name)
+		err = k8s.CreateCronJob(*sj)
 	} else {
-		k8s.CreateJob(sj)
+		log.Info().Msg("Creating Job from SimpleJob=" + sj.Name)
+		err = k8s.CreateJob(*sj)
 	}
+
+	if err != nil {
+		log.Error().Msg(
+			fmt.Sprintf("Failed creating SimpleJob=%s | %v", sj.Name, err),
+		)
+		c.JSON(
+			http.StatusUnprocessableEntity,
+			gin.H{
+				"status":  http.StatusUnprocessableEntity,
+				"message": "could not create SimpleJob=" + sj.Name,
+			},
+		)
+		return
+	}
+
+	c.JSON(
+		http.StatusCreated,
+		gin.H{
+			"status":  http.StatusCreated,
+			"message": "created SimpleJob=" + sj.Name,
+		},
+	)
 }
 
 func fetchSimpleJob(c *gin.Context) {
@@ -78,7 +135,6 @@ func healthCheck(c *gin.Context) {
 			"message": "ok",
 		},
 	)
-
 }
 
 func exportMetrics(c *gin.Context) {
