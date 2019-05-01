@@ -3,6 +3,7 @@ package pkg
 import (
 	batchv1 "k8s.io/api/batch/v1"
 	batchv1beta1 "k8s.io/api/batch/v1beta1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 )
@@ -56,6 +57,26 @@ func (k KubernetesAPI) CreateCronJob(sj SimpleJob) error {
 		},
 	}
 	_, err := k.Client.BatchV1beta1().CronJobs(sj.Namespace).Create(cronJob)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (k KubernetesAPI) DeleteJob(sj SimpleJob) error {
+	err = k.Client.BatchV1().Jobs(sj.Namespace).Delete(sj.Name, &metav1.DeleteOptions{})
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (k KubernetesAPI) DeleteCronJob(sj SimpleJob) error {
+	err = k.Client.BatchV1beta1().CronJobs(sj.Namespace).Delete(sj.Name, &metav1.DeleteOptions{})
 
 	if err != nil {
 		return err
