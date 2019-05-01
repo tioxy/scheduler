@@ -165,7 +165,7 @@ func deleteSimpleJob(c *gin.Context) {
 		http.StatusAccepted,
 		gin.H{
 			"status":  http.StatusAccepted,
-			"message": "Marked for deletion SimpleJob=" + sj.Name,
+			"message": "marked for deletion SimpleJob=" + sj.Name,
 		},
 	)
 
