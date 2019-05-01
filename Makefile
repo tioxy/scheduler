@@ -20,9 +20,10 @@ all: test build
 build: 
 		$(GOBUILD) -o $(BINARY_NAME) -v $(BUILD_PACKAGE)
 test: 
-		$(GOTEST) -v ./...
+		$(GOTEST) -count=1 -v ./...
 clean: 
 		$(GOCLEAN)
+		$(GOCLEAN) -testcache
 		rm -f $(BINARY_NAME)
 		rm -f $(BINARY_UNIX)
 		rm -f $(BINARY_DARWIN)
