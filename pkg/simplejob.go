@@ -38,9 +38,8 @@ func (sj SimpleJob) createJobSpec() batchv1.JobSpec {
 }
 
 func (sj SimpleJob) IsScheduled() bool {
-	if sj.Cron != "" {
-		return true
-	} else {
+	if sj.Cron == "" {
 		return false
 	}
+	return true
 }
