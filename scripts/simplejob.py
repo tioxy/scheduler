@@ -25,14 +25,28 @@ simple_job = {
     ],
 }
 
+simple_job_updated = {
+    "name": "pi",
+    "namespace": "default",
+    "maxRetries": 1,
+    "containers": [
+        {
+            "name": "pi-new",
+            "image": "perl",
+            "command": ["perl", "-Mbignum=bpi", "-wle", "print bpi(50)"],
+        },
+    ],
+}
+
 
 def main():
     methods = {
         "create": create,
         "delete": delete,
+        "update": update,
     }
     output = methods[METHOD]()
-    print(output)
+    print(output.text)
 
 def create():
     r = requests.post(
@@ -41,10 +55,17 @@ def create():
     )
     return r
 
+def update():
+    r = requests.put(
+        f"{URL}{api_group}/",
+        data=json.dumps(simple_job_updated),
+    )
+    return r
+
 def delete():
     r = requests.delete(
         f"{URL}{api_group}/",
-        data=json.dumps(simple_job),
+        data=json.dumps(simple_job_updated),
     )
     return r
 
