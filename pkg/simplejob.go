@@ -2,6 +2,7 @@ package pkg
 
 import (
 	batchv1 "k8s.io/api/batch/v1"
+	batchv1beta1 "k8s.io/api/batch/v1beta1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -42,4 +43,23 @@ func (sj SimpleJob) IsScheduled() bool {
 		return false
 	}
 	return true
+}
+
+func (sj SimpleJob) ToJob() *batchv1.Job {
+	return &batchv1.Job{
+		ObjectMeta: sj.createObjectMeta(),
+		Spec:       sj.createJobSpec(),
+	}
+}
+
+func (sj SimpleJob) ToCronJob() *batchv1beta1.CronJob {
+	return &batchv1beta1.CronJob{
+		ObjectMeta: sj.createObjectMeta(),
+		Spec: batchv1beta1.CronJobSpec{
+			Schedule: sj.Cron,
+			JobTemplate: batchv1beta1.JobTemplateSpec{
+				Spec: sj.createJobSpec(),
+			},
+		},
+	}
 }

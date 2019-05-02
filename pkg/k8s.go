@@ -1,8 +1,9 @@
 package pkg
 
 import (
-	batchv1 "k8s.io/api/batch/v1"
-	batchv1beta1 "k8s.io/api/batch/v1beta1"
+	"reflect"
+
+	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -33,11 +34,8 @@ func CreateKubernetesAPI() KubernetesAPI {
 }
 
 func (k KubernetesAPI) CreateJob(sj SimpleJob) error {
-	job := &batchv1.Job{
-		ObjectMeta: sj.createObjectMeta(),
-		Spec:       sj.createJobSpec(),
-	}
-	_, err := k.Client.BatchV1().Jobs(sj.Namespace).Create(job)
+	job := sj.ToJob()
+	_, err := k.Client.BatchV1().Jobs(job.ObjectMeta.Namespace).Create(job)
 
 	if err != nil {
 		return err
@@ -47,16 +45,8 @@ func (k KubernetesAPI) CreateJob(sj SimpleJob) error {
 }
 
 func (k KubernetesAPI) CreateCronJob(sj SimpleJob) error {
-	cronJob := &batchv1beta1.CronJob{
-		ObjectMeta: sj.createObjectMeta(),
-		Spec: batchv1beta1.CronJobSpec{
-			Schedule: sj.Cron,
-			JobTemplate: batchv1beta1.JobTemplateSpec{
-				Spec: sj.createJobSpec(),
-			},
-		},
-	}
-	_, err := k.Client.BatchV1beta1().CronJobs(sj.Namespace).Create(cronJob)
+	cronJob := sj.ToCronJob()
+	_, err := k.Client.BatchV1beta1().CronJobs(cronJob.ObjectMeta.Namespace).Create(cronJob)
 
 	if err != nil {
 		return err
@@ -66,7 +56,8 @@ func (k KubernetesAPI) CreateCronJob(sj SimpleJob) error {
 }
 
 func (k KubernetesAPI) DeleteJob(sj SimpleJob) error {
-	err = k.Client.BatchV1().Jobs(sj.Namespace).Delete(sj.Name, &metav1.DeleteOptions{})
+	job := sj.ToJob()
+	err = k.Client.BatchV1().Jobs(job.ObjectMeta.Namespace).Delete(job.ObjectMeta.Name, &metav1.DeleteOptions{})
 
 	if err != nil {
 		return err
@@ -76,11 +67,41 @@ func (k KubernetesAPI) DeleteJob(sj SimpleJob) error {
 }
 
 func (k KubernetesAPI) DeleteCronJob(sj SimpleJob) error {
-	err = k.Client.BatchV1beta1().CronJobs(sj.Namespace).Delete(sj.Name, &metav1.DeleteOptions{})
+	cronJob := sj.ToCronJob()
+	err = k.Client.BatchV1beta1().CronJobs(cronJob.ObjectMeta.Namespace).Delete(cronJob.ObjectMeta.Name, &metav1.DeleteOptions{})
 
 	if err != nil {
 		return err
 	}
 
 	return nil
+}
+
+func (k KubernetesAPI) UpdateJob(sj SimpleJob) error {
+	job := sj.ToJob()
+	_, err = k.Client.BatchV1().Jobs(job.ObjectMeta.Namespace).Update(job)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (k KubernetesAPI) UpdateCronJob(sj SimpleJob) error {
+	cronJob := sj.ToCronJob()
+	_, err = k.Client.BatchV1beta1().CronJobs(cronJob.ObjectMeta.Namespace).Update(cronJob)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func areContainersEqual(srcContainers []v1.Container, destContainers []v1.Container) bool {
+	if reflect.DeepEqual(srcContainers, destContainers) {
+		return true
+	}
+	return false
 }

@@ -172,7 +172,51 @@ func deleteSimpleJob(c *gin.Context) {
 }
 
 func updateSimpleJob(c *gin.Context) {
+	sj, err := generateSimpleJobFromJSON(c)
 
+	if err != nil {
+		log.Warn().Msg(fmt.Sprintf("Could not parse JSON for SimpleJob | %v", err))
+		c.JSON(
+			http.StatusBadRequest,
+			gin.H{
+				"status":  http.StatusBadRequest,
+				"message": "could not parse json",
+			},
+		)
+		return
+	}
+
+	k8s := scheduler.CreateKubernetesAPI()
+
+	if sj.IsScheduled() {
+		log.Info().Msg("Updating CronJob from SimpleJob=" + sj.Name)
+		err = k8s.UpdateCronJob(sj)
+	} else {
+		log.Info().Msg("Updating Job from SimpleJob=" + sj.Name)
+		err = k8s.UpdateJob(sj)
+	}
+
+	if err != nil {
+		log.Error().Msg(
+			fmt.Sprintf("Failed updating SimpleJob=%s | %v", sj.Name, err),
+		)
+		c.JSON(
+			http.StatusUnprocessableEntity,
+			gin.H{
+				"status":  http.StatusUnprocessableEntity,
+				"message": "could not update SimpleJob=" + sj.Name,
+			},
+		)
+		return
+	}
+
+	c.JSON(
+		http.StatusAccepted,
+		gin.H{
+			"status":  http.StatusNoContent,
+			"message": "marked for update SimpleJob=" + sj.Name,
+		},
+	)
 }
 
 func healthCheck(c *gin.Context) {
