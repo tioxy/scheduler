@@ -8,12 +8,12 @@ GOTEST=$(GOCMD) test
 BINARY_NAME=scheduler
 BINARY_UNIX=$(BINARY_NAME)_unix
 BINARY_DARWIN=$(BINARY_NAME)_darwin
-BUILD_PACKAGE=internal/app/main.go
+BUILD_PACKAGE=cmd/scheduler/main.go
 
-CONTAINER_IMAGE=tioxy/scheduler
-CONTAINER_TAG=latest
-CONTAINER_FILE=Dockerfile
-CONTAINER_CONTEXT=.
+IMAGE_REPO=tioxy/scheduler
+IMAGE_TAG=latest
+DOCKERFILE=Dockerfile
+DOCKERFILE_CONTEXT=.
 
 all: test build
 
@@ -32,17 +32,16 @@ build-linux:
 		CGO_ENABLED=0 GOOS=linux GOARCH=amd64 $(GOBUILD) -o $(BINARY_UNIX) -v $(BUILD_PACKAGE)
 build-darwin:
 		CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 $(GOBUILD) -o $(BINARY_UNIX) -v $(BUILD_PACKAGE)
-
-docker-build:
+build-image:
 		docker build \
-			-t "$(CONTAINER_IMAGE):$(CONTAINER_TAG)" \
-			-f $(CONTAINER_FILE) $(CONTAINER_CONTEXT) \
+			-t "$(IMAGE_REPO):$(IMAGE_TAG)" \
+			-f $(DOCKERFILE) $(DOCKERFILE_CONTEXT) \
 			--build-arg IN_BINARY=$(BINARY_UNIX)
-docker-push:
-		docker image push "$(CONTAINER_IMAGE):$(CONTAINER_TAG)"
 
 gen-image:
 		$(MAKE) -f $(MAKEFILE) test
 		$(MAKE) -f $(MAKEFILE) build-linux
-		$(MAKE) -f $(MAKEFILE) docker-build
+		$(MAKE) -f $(MAKEFILE) build-image
 		$(MAKE) -f $(MAKEFILE) clean
+push-image:
+		docker image push "$(IMAGE_REPO):$(IMAGE_TAG)"
