@@ -1,4 +1,4 @@
-FROM golang:alpine
+FROM busybox:latest
 LABEL maintainer="Gabriel Tiossi"
 
 ARG IN_BINARY="./scheduler"
