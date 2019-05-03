@@ -25,10 +25,11 @@ simple_job = {
     ],
 }
 
-simple_job_updated = {
+simple_job_cron = {
     "name": "pi",
     "namespace": "default",
     "maxRetries": 1,
+    "cron": "* * * * *",
     "containers": [
         {
             "name": "pi-new",
@@ -45,29 +46,46 @@ def main():
         "delete": delete,
         "update": update,
     }
-    output = methods[METHOD]()
-    print(output.text)
+    methods[METHOD]()
 
 def create():
+    """
+    Create a SimpleJob
+    """
     r = requests.post(
         f"{URL}{api_group}/",
         data=json.dumps(simple_job),
     )
-    return r
+    print(r.text)
 
 def update():
+    """
+    Create & Update a scheduled SimpleJob
+    """
+    r = requests.post(
+        f"{URL}{api_group}/",
+        data=json.dumps(simple_job_cron),
+    )
+    print(r.text)
+
+    simple_job_cron["cron"] = "9 9 * * *"
+    simple_job_cron["maxRetries"] = 99
+
     r = requests.put(
         f"{URL}{api_group}/",
-        data=json.dumps(simple_job_updated),
+        data=json.dumps(simple_job_cron),
     )
-    return r
+    print(r.text)
 
 def delete():
+    """
+    Delete a SimpleJob
+    """
     r = requests.delete(
         f"{URL}{api_group}/",
-        data=json.dumps(simple_job_updated),
+        data=json.dumps(simple_job),
     )
-    return r
+    print(r.text)
 
 
 if __name__ == "__main__":

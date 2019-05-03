@@ -10,6 +10,7 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	scheduler "github.com/tioxy/scheduler/pkg"
+	schedulerK8s "github.com/tioxy/scheduler/pkg/k8s"
 )
 
 var err error
@@ -81,7 +82,7 @@ func createSimpleJob(c *gin.Context) {
 		return
 	}
 
-	k8s := scheduler.CreateKubernetesAPI()
+	k8s := schedulerK8s.CreateKubernetesAPI()
 
 	if sj.IsScheduled() {
 		log.Info().Msg("Creating CronJob from SimpleJob=" + sj.Name)
@@ -137,7 +138,7 @@ func deleteSimpleJob(c *gin.Context) {
 		return
 	}
 
-	k8s := scheduler.CreateKubernetesAPI()
+	k8s := schedulerK8s.CreateKubernetesAPI()
 
 	if sj.IsScheduled() {
 		log.Info().Msg("Deleting CronJob from SimpleJob=" + sj.Name)
@@ -186,15 +187,21 @@ func updateSimpleJob(c *gin.Context) {
 		return
 	}
 
-	k8s := scheduler.CreateKubernetesAPI()
+	k8s := schedulerK8s.CreateKubernetesAPI()
 
-	if sj.IsScheduled() {
-		log.Info().Msg("Updating CronJob from SimpleJob=" + sj.Name)
-		err = k8s.UpdateCronJob(sj)
-	} else {
-		log.Info().Msg("Updating Job from SimpleJob=" + sj.Name)
-		err = k8s.UpdateJob(sj)
+	if !sj.IsScheduled() {
+		log.Warn().Msg("Could not update SimpleJob=" + sj.Name + " because it is not Scheduled. Missing 'cron' key.")
+		c.JSON(
+			http.StatusAccepted,
+			gin.H{
+				"status":  http.StatusAccepted,
+				"message": "cpi",
+			},
+		)
 	}
+
+	log.Info().Msg("Updating CronJob from SimpleJob=" + sj.Name)
+	err = k8s.UpdateCronJob(sj)
 
 	if err != nil {
 		log.Error().Msg(

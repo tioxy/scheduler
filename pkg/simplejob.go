@@ -15,29 +15,6 @@ type SimpleJob struct {
 	Cron       string         `json:"cron,omitempty"`
 }
 
-func (sj SimpleJob) createObjectMeta() metav1.ObjectMeta {
-	return metav1.ObjectMeta{
-		Name:      sj.Name,
-		Namespace: sj.Namespace,
-		Labels: map[string]string{
-			"job":        sj.Name,
-			"created-by": "scheduler",
-		},
-	}
-}
-
-func (sj SimpleJob) createJobSpec() batchv1.JobSpec {
-	return batchv1.JobSpec{
-		Template: v1.PodTemplateSpec{
-			Spec: v1.PodSpec{
-				Containers:    sj.Containers,
-				RestartPolicy: v1.RestartPolicyNever,
-			},
-		},
-		BackoffLimit: &sj.MaxRetries,
-	}
-}
-
 func (sj SimpleJob) IsScheduled() bool {
 	if sj.Cron == "" {
 		return false
@@ -61,5 +38,28 @@ func (sj SimpleJob) ToCronJob() *batchv1beta1.CronJob {
 				Spec: sj.createJobSpec(),
 			},
 		},
+	}
+}
+
+func (sj SimpleJob) createObjectMeta() metav1.ObjectMeta {
+	return metav1.ObjectMeta{
+		Name:      sj.Name,
+		Namespace: sj.Namespace,
+		Labels: map[string]string{
+			"job":        sj.Name,
+			"created-by": "scheduler",
+		},
+	}
+}
+
+func (sj SimpleJob) createJobSpec() batchv1.JobSpec {
+	return batchv1.JobSpec{
+		Template: v1.PodTemplateSpec{
+			Spec: v1.PodSpec{
+				Containers:    sj.Containers,
+				RestartPolicy: v1.RestartPolicyNever,
+			},
+		},
+		BackoffLimit: &sj.MaxRetries,
 	}
 }

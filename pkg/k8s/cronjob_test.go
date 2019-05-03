@@ -1,8 +1,9 @@
-package pkg
+package k8s
 
 import (
 	"testing"
 
+	scheduler "github.com/tioxy/scheduler/pkg"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/fake"
@@ -13,7 +14,7 @@ func TestCreateCronJob(t *testing.T) {
 		Client: fake.NewSimpleClientset(),
 	}
 
-	sj := SimpleJob{
+	sj := scheduler.SimpleJob{
 		Name:       "pi",
 		Namespace:  "default",
 		Cron:       "0 0 * * *",
@@ -45,7 +46,7 @@ func TestDeleteCronJob(t *testing.T) {
 		Client: fake.NewSimpleClientset(),
 	}
 
-	sj := SimpleJob{
+	sj := scheduler.SimpleJob{
 		Name:       "pi",
 		Namespace:  "default",
 		Cron:       "0 0 * * *",
@@ -83,7 +84,7 @@ func TestUpdateCronJob(t *testing.T) {
 		Client: fake.NewSimpleClientset(),
 	}
 
-	sj := SimpleJob{
+	sj := scheduler.SimpleJob{
 		Name:       "pi",
 		Namespace:  "default",
 		Cron:       "0 0 * * *",
@@ -101,7 +102,7 @@ func TestUpdateCronJob(t *testing.T) {
 		t.Fatal(err.Error())
 	}
 
-	newSj := SimpleJob{
+	newSj := scheduler.SimpleJob{
 		Name:       "pi",
 		Namespace:  "default",
 		Cron:       "0 12 * * *",
