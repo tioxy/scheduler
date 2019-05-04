@@ -129,3 +129,37 @@ func TestUpdateCronJob(t *testing.T) {
 		t.Fatal("Updated CronJob doesn't match new Containers from SimpleJob")
 	}
 }
+
+func TestFetchCronJob(t *testing.T) {
+	api := &KubernetesAPI{
+		Client: fake.NewSimpleClientset(),
+	}
+
+	sj := scheduler.SimpleJob{
+		Name:       "pi",
+		Namespace:  "default",
+		Cron:       "0 0 * * *",
+		MaxRetries: 4,
+		Containers: []v1.Container{
+			v1.Container{
+				Name:    "pi",
+				Image:   "perl",
+				Command: []string{"perl", "-Mbignum=bpi", "-wle", "print bpi(2000)"},
+			},
+		},
+	}
+
+	err := api.CreateCronJob(sj)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	_, err = api.FetchCronJob(
+		sj.Name,
+		sj.Namespace,
+	)
+
+	if err != nil {
+		t.Fatal("Could not fetch CronJob because " + err.Error())
+	}
+}

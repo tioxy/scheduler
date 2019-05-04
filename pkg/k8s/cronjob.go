@@ -2,6 +2,7 @@ package k8s
 
 import (
 	scheduler "github.com/tioxy/scheduler/pkg"
+	batchv1beta1 "k8s.io/api/batch/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -36,4 +37,14 @@ func (k KubernetesAPI) UpdateCronJob(sj scheduler.SimpleJob) error {
 	}
 
 	return nil
+}
+
+func (k KubernetesAPI) FetchCronJob(name string, namespace string) (*batchv1beta1.CronJob, error) {
+	cronJob, err := k.Client.BatchV1beta1().CronJobs(namespace).Get(name, metav1.GetOptions{})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return cronJob, nil
 }

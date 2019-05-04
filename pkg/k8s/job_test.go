@@ -75,3 +75,36 @@ func TestDeleteJob(t *testing.T) {
 		t.Fatal("K8S Job exists after deletion")
 	}
 }
+
+func TestFetchJob(t *testing.T) {
+	api := &KubernetesAPI{
+		Client: fake.NewSimpleClientset(),
+	}
+
+	sj := scheduler.SimpleJob{
+		Name:       "pi",
+		Namespace:  "default",
+		MaxRetries: 4,
+		Containers: []v1.Container{
+			v1.Container{
+				Name:    "pi",
+				Image:   "perl",
+				Command: []string{"perl", "-Mbignum=bpi", "-wle", "print bpi(2000)"},
+			},
+		},
+	}
+
+	err := api.CreateJob(sj)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	_, err = api.FetchJob(
+		sj.Name,
+		sj.Namespace,
+	)
+
+	if err != nil {
+		t.Fatal("Could not fetch Job because " + err.Error())
+	}
+}
