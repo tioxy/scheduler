@@ -38,6 +38,10 @@ build-image:
 			-f $(DOCKERFILE) $(DOCKERFILE_CONTEXT) \
 			--build-arg IN_BINARY=$(BINARY_UNIX)
 
+clean-image:
+		docker image rm -f "$(IMAGE_REPO):$(IMAGE_TAG)"
+		docker image prune -f
+
 gen-image:
 		$(MAKE) -f $(MAKEFILE) test
 		$(MAKE) -f $(MAKEFILE) build-linux
