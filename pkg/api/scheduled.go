@@ -79,9 +79,9 @@ func FetchScheduledSimpleJob(c *gin.Context) {
 	simpleJob := scheduler.ConvertCronJobToSimpleJob(*cronJob)
 
 	c.JSON(
-		http.StatusAccepted,
+		http.StatusOK,
 		gin.H{
-			"status":  http.StatusAccepted,
+			"status":  http.StatusOK,
 			"message": "fetched scheduled simplejob",
 			"data":    simpleJob,
 		},
