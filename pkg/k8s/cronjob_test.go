@@ -29,13 +29,11 @@ func TestCreateCronJob(t *testing.T) {
 	}
 
 	err := api.CreateCronJob(sj)
-
 	if err != nil {
 		t.Fatal(err.Error())
 	}
 
 	_, err = api.Client.BatchV1beta1().CronJobs(sj.Namespace).Get(sj.Name, metav1.GetOptions{})
-
 	if err != nil {
 		t.Fatal(err.Error())
 	}
@@ -61,19 +59,16 @@ func TestDeleteCronJob(t *testing.T) {
 	}
 
 	err = api.CreateCronJob(sj)
-
 	if err != nil {
 		t.Fatal(err.Error())
 	}
 
-	err = api.DeleteCronJob(sj)
-
+	err = api.DeleteCronJob(sj.Name, sj.Namespace)
 	if err != nil {
 		t.Fatal(err.Error())
 	}
 
 	_, err = api.Client.BatchV1beta1().CronJobs(sj.Namespace).Get(sj.Name, metav1.GetOptions{})
-
 	if err == nil {
 		t.Fatal("K8S CronJob exists after deletion")
 	}
@@ -97,6 +92,7 @@ func TestUpdateCronJob(t *testing.T) {
 			},
 		},
 	}
+
 	err = api.CreateCronJob(sj)
 	if err != nil {
 		t.Fatal(err.Error())
@@ -115,6 +111,7 @@ func TestUpdateCronJob(t *testing.T) {
 			},
 		},
 	}
+
 	err = api.UpdateCronJob(newSj)
 	if err != nil {
 		t.Fatal(err.Error())

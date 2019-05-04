@@ -7,8 +7,8 @@ import (
 )
 
 func (k KubernetesAPI) CreateCronJob(sj scheduler.SimpleJob) error {
-	cronJob := sj.ToCronJob()
-	_, err := k.Client.BatchV1beta1().CronJobs(cronJob.ObjectMeta.Namespace).Create(cronJob)
+	cronJob := scheduler.ConvertSimpleJobToCronJob(sj)
+	_, err := k.Client.BatchV1beta1().CronJobs(cronJob.ObjectMeta.Namespace).Create(&cronJob)
 
 	if err != nil {
 		return err
@@ -17,20 +17,8 @@ func (k KubernetesAPI) CreateCronJob(sj scheduler.SimpleJob) error {
 	return nil
 }
 
-func (k KubernetesAPI) DeleteCronJob(sj scheduler.SimpleJob) error {
-	cronJob := sj.ToCronJob()
-	err := k.Client.BatchV1beta1().CronJobs(cronJob.ObjectMeta.Namespace).Delete(cronJob.ObjectMeta.Name, &metav1.DeleteOptions{})
-
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (k KubernetesAPI) UpdateCronJob(sj scheduler.SimpleJob) error {
-	cronJob := sj.ToCronJob()
-	_, err := k.Client.BatchV1beta1().CronJobs(cronJob.ObjectMeta.Namespace).Update(cronJob)
+func (k KubernetesAPI) DeleteCronJob(name string, namespace string) error {
+	err := k.Client.BatchV1beta1().CronJobs(namespace).Delete(name, &metav1.DeleteOptions{})
 
 	if err != nil {
 		return err
@@ -47,4 +35,15 @@ func (k KubernetesAPI) FetchCronJob(name string, namespace string) (*batchv1beta
 	}
 
 	return cronJob, nil
+}
+
+func (k KubernetesAPI) UpdateCronJob(sj scheduler.SimpleJob) error {
+	cronJob := scheduler.ConvertSimpleJobToCronJob(sj)
+	_, err := k.Client.BatchV1beta1().CronJobs(cronJob.ObjectMeta.Namespace).Update(&cronJob)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

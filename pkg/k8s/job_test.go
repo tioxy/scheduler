@@ -28,12 +28,11 @@ func TestCreateJob(t *testing.T) {
 	}
 
 	err := api.CreateJob(sj)
-
 	if err != nil {
 		t.Fatal(err.Error())
 	}
-	_, err = api.Client.BatchV1().Jobs(sj.Namespace).Get(sj.Name, metav1.GetOptions{})
 
+	_, err = api.Client.BatchV1().Jobs(sj.Namespace).Get(sj.Name, metav1.GetOptions{})
 	if err != nil {
 		t.Fatal(err.Error())
 	}
@@ -58,19 +57,16 @@ func TestDeleteJob(t *testing.T) {
 	}
 
 	err = api.CreateJob(sj)
-
 	if err != nil {
 		t.Fatal(err.Error())
 	}
 
-	err = api.DeleteJob(sj)
-
+	err = api.DeleteJob(sj.Name, sj.Namespace)
 	if err != nil {
 		t.Fatal(err.Error())
 	}
 
 	_, err = api.Client.BatchV1().Jobs(sj.Namespace).Get(sj.Name, metav1.GetOptions{})
-
 	if err == nil {
 		t.Fatal("K8S Job exists after deletion")
 	}
@@ -103,7 +99,6 @@ func TestFetchJob(t *testing.T) {
 		sj.Name,
 		sj.Namespace,
 	)
-
 	if err != nil {
 		t.Fatal("Could not fetch Job because " + err.Error())
 	}

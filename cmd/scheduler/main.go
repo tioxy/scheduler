@@ -1,16 +1,13 @@
 package main
 
 import (
-	"fmt"
 	"net/http"
 	"os"
 
 	ginLogger "github.com/gin-contrib/logger"
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog"
-	"github.com/rs/zerolog/log"
-	scheduler "github.com/tioxy/scheduler/pkg"
-	schedulerK8s "github.com/tioxy/scheduler/pkg/k8s"
+	"github.com/tioxy/scheduler/pkg/api"
 )
 
 var err error
@@ -43,15 +40,23 @@ func main() {
 	r.GET("/healthz", healthCheck)
 	r.GET("/metrics", exportMetrics)
 
-	v1 := r.Group("/api/v1/jobs")
+	simpleV1 := r.Group("/api/v1/jobs/simple")
 	{
-		v1.GET("/", getAllSimpleJobs)
-		v1.GET("/:namespace", getSimpleJobsFromNamespace)
-		v1.GET("/:namespace/:name", fetchSimpleJob)
+		//simpleV1.GET("/", getAllSimpleJobs)
+		simpleV1.POST("/", api.CreateSimpleJob)
+		//simpleV1.GET("/:namespace", getSimpleJobsFromNamespace)
+		simpleV1.GET("/:namespace/:name", api.FetchSimpleJob)
+		simpleV1.DELETE("/:namespace/:name", api.DeleteSimpleJob)
+	}
 
-		v1.POST("/", createSimpleJob)
-		v1.PUT("/", updateSimpleJob)
-		v1.DELETE("/", deleteSimpleJob)
+	scheduledV1 := r.Group("/api/v1/jobs/scheduled")
+	{
+		//scheduledV1.GET("/", api.GetAllSimpleJobs)
+		scheduledV1.POST("/", api.CreateScheduledSimpleJob)
+		//scheduledV1.GET("/:namespace", api.GetSimpleJobsFromNamespace)
+		scheduledV1.GET("/:namespace/:name", api.FetchScheduledSimpleJob)
+		scheduledV1.DELETE("/:namespace/:name", api.DeleteScheduledSimpleJob)
+		scheduledV1.PUT("/:namespace/:name", api.UpdateScheduledSimpleJob)
 	}
 
 	r.Run()
@@ -61,168 +66,6 @@ func root(c *gin.Context) {
 	c.JSON(
 		http.StatusOK,
 		gin.H{"status": http.StatusOK, "message": "Scheduler Running :D"},
-	)
-}
-
-func getAllSimpleJobs(c *gin.Context) {
-}
-
-func createSimpleJob(c *gin.Context) {
-	sj, err := generateSimpleJobFromJSON(c)
-
-	if err != nil {
-		log.Warn().Msg(fmt.Sprintf("Could not parse JSON for SimpleJob | %v", err))
-		c.JSON(
-			http.StatusBadRequest,
-			gin.H{
-				"status":  http.StatusBadRequest,
-				"message": "could not parse json",
-			},
-		)
-		return
-	}
-
-	k8s := schedulerK8s.CreateKubernetesAPI()
-
-	if sj.IsScheduled() {
-		log.Info().Msg("Creating CronJob from SimpleJob=" + sj.Name)
-		err = k8s.CreateCronJob(sj)
-	} else {
-		log.Info().Msg("Creating Job from SimpleJob=" + sj.Name)
-		err = k8s.CreateJob(sj)
-	}
-
-	if err != nil {
-		log.Error().Msg(
-			fmt.Sprintf("Failed creating SimpleJob=%s | %v", sj.Name, err),
-		)
-		c.JSON(
-			http.StatusUnprocessableEntity,
-			gin.H{
-				"status":  http.StatusUnprocessableEntity,
-				"message": "could not create SimpleJob=" + sj.Name,
-			},
-		)
-		return
-	}
-
-	c.JSON(
-		http.StatusCreated,
-		gin.H{
-			"status":  http.StatusCreated,
-			"message": "created SimpleJob=" + sj.Name,
-		},
-	)
-}
-
-func getSimpleJobsFromNamespace(c *gin.Context) {
-
-}
-
-func fetchSimpleJob(c *gin.Context) {
-
-}
-
-func deleteSimpleJob(c *gin.Context) {
-	sj, err := generateSimpleJobFromJSON(c)
-
-	if err != nil {
-		log.Warn().Msg(fmt.Sprintf("Could not parse JSON for SimpleJob | %v", err))
-		c.JSON(
-			http.StatusBadRequest,
-			gin.H{
-				"status":  http.StatusBadRequest,
-				"message": "could not parse json",
-			},
-		)
-		return
-	}
-
-	k8s := schedulerK8s.CreateKubernetesAPI()
-
-	if sj.IsScheduled() {
-		log.Info().Msg("Deleting CronJob from SimpleJob=" + sj.Name)
-		err = k8s.DeleteCronJob(sj)
-	} else {
-		log.Info().Msg("Deleting Job from SimpleJob=" + sj.Name)
-		err = k8s.DeleteJob(sj)
-	}
-
-	if err != nil {
-		log.Error().Msg(
-			fmt.Sprintf("Failed deleting SimpleJob=%s | %v", sj.Name, err),
-		)
-		c.JSON(
-			http.StatusUnprocessableEntity,
-			gin.H{
-				"status":  http.StatusUnprocessableEntity,
-				"message": "could not delete SimpleJob=" + sj.Name,
-			},
-		)
-		return
-	}
-
-	c.JSON(
-		http.StatusAccepted,
-		gin.H{
-			"status":  http.StatusAccepted,
-			"message": "marked for deletion SimpleJob=" + sj.Name,
-		},
-	)
-
-}
-
-func updateSimpleJob(c *gin.Context) {
-	sj, err := generateSimpleJobFromJSON(c)
-
-	if err != nil {
-		log.Warn().Msg(fmt.Sprintf("Could not parse JSON for SimpleJob | %v", err))
-		c.JSON(
-			http.StatusBadRequest,
-			gin.H{
-				"status":  http.StatusBadRequest,
-				"message": "could not parse json",
-			},
-		)
-		return
-	}
-
-	k8s := schedulerK8s.CreateKubernetesAPI()
-
-	if !sj.IsScheduled() {
-		log.Warn().Msg("Could not update SimpleJob=" + sj.Name + " because it is not Scheduled. Missing 'cron' key.")
-		c.JSON(
-			http.StatusAccepted,
-			gin.H{
-				"status":  http.StatusAccepted,
-				"message": "cpi",
-			},
-		)
-	}
-
-	log.Info().Msg("Updating CronJob from SimpleJob=" + sj.Name)
-	err = k8s.UpdateCronJob(sj)
-
-	if err != nil {
-		log.Error().Msg(
-			fmt.Sprintf("Failed updating SimpleJob=%s | %v", sj.Name, err),
-		)
-		c.JSON(
-			http.StatusUnprocessableEntity,
-			gin.H{
-				"status":  http.StatusUnprocessableEntity,
-				"message": "could not update SimpleJob=" + sj.Name,
-			},
-		)
-		return
-	}
-
-	c.JSON(
-		http.StatusAccepted,
-		gin.H{
-			"status":  http.StatusNoContent,
-			"message": "marked for update SimpleJob=" + sj.Name,
-		},
 	)
 }
 
@@ -238,15 +81,4 @@ func healthCheck(c *gin.Context) {
 
 func exportMetrics(c *gin.Context) {
 
-}
-
-func generateSimpleJobFromJSON(c *gin.Context) (scheduler.SimpleJob, error) {
-	sj := &scheduler.SimpleJob{}
-	err := c.BindJSON(sj)
-
-	if err != nil {
-		return *sj, err
-	}
-
-	return *sj, nil
 }

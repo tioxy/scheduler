@@ -7,8 +7,8 @@ import (
 )
 
 func (k KubernetesAPI) CreateJob(sj scheduler.SimpleJob) error {
-	job := sj.ToJob()
-	_, err := k.Client.BatchV1().Jobs(job.ObjectMeta.Namespace).Create(job)
+	job := scheduler.ConvertSimpleJobToJob(sj)
+	_, err := k.Client.BatchV1().Jobs(job.ObjectMeta.Namespace).Create(&job)
 
 	if err != nil {
 		return err
@@ -17,9 +17,8 @@ func (k KubernetesAPI) CreateJob(sj scheduler.SimpleJob) error {
 	return nil
 }
 
-func (k KubernetesAPI) DeleteJob(sj scheduler.SimpleJob) error {
-	job := sj.ToJob()
-	err = k.Client.BatchV1().Jobs(job.ObjectMeta.Namespace).Delete(job.ObjectMeta.Name, &metav1.DeleteOptions{})
+func (k KubernetesAPI) DeleteJob(name string, namespace string) error {
+	err = k.Client.BatchV1().Jobs(namespace).Delete(name, &metav1.DeleteOptions{})
 
 	if err != nil {
 		return err
