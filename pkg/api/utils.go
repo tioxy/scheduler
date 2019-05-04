@@ -15,7 +15,3 @@ func generateSimpleJobFromJSON(c *gin.Context) (scheduler.SimpleJob, error) {
 
 	return *sj, nil
 }
-
-func convertSimpleJobToJSON() {
-
-}
