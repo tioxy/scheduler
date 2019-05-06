@@ -160,3 +160,61 @@ func TestFetchCronJob(t *testing.T) {
 		t.Fatal("Could not fetch CronJob because " + err.Error())
 	}
 }
+
+func TestGetCronJobs(t *testing.T) {
+	api := &KubernetesAPI{
+		Client: fake.NewSimpleClientset(),
+	}
+
+	simpleJobs := []scheduler.SimpleJob{
+		{
+			Name:       "pi-1000",
+			Namespace:  "default",
+			Cron:       "0 0 * * *",
+			MaxRetries: 4,
+			Containers: []v1.Container{
+				v1.Container{
+					Name:    "pi",
+					Image:   "perl",
+					Command: []string{"perl", "-Mbignum=bpi", "-wle", "print bpi(1000)"},
+				},
+			},
+		},
+		{
+			Name:       "pi-2000",
+			Namespace:  "kube-system",
+			Cron:       "0 0 * * *",
+			MaxRetries: 4,
+			Containers: []v1.Container{
+				v1.Container{
+					Name:    "pi",
+					Image:   "perl",
+					Command: []string{"perl", "-Mbignum=bpi", "-wle", "print bpi(2000)"},
+				},
+			},
+		},
+	}
+
+	for _, sj := range simpleJobs {
+		err := api.CreateCronJob(sj)
+		if err != nil {
+			t.Fatal(err.Error())
+		}
+	}
+
+	cronJobsAllNamespaces, err := api.GetCronJobs(allNamespaces)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	if len(cronJobsAllNamespaces) != len(simpleJobs) {
+		t.Fatal("The amount of CronJobs created do not match the amount of CronJobs received from all namespaces")
+	}
+
+	cronJobsDefaultNamespace, err := api.GetCronJobs("default")
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	if len(cronJobsDefaultNamespace) != 1 {
+		t.Fatal("The amount of CronJobs created do not match the amount of CronJobs received from 'default' namespace")
+	}
+}

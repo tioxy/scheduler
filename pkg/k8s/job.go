@@ -36,3 +36,13 @@ func (k KubernetesAPI) FetchJob(name string, namespace string) (*batchv1.Job, er
 
 	return job, nil
 }
+
+func (k KubernetesAPI) GetJobs(namespace string) ([]batchv1.Job, error) {
+	jobList, err := k.Client.BatchV1().Jobs(namespace).List(metav1.ListOptions{})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return jobList.Items, nil
+}

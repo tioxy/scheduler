@@ -8,6 +8,8 @@ import (
 	"k8s.io/client-go/rest"
 )
 
+const allNamespaces = ""
+
 var err error
 
 type KubernetesAPI struct {
