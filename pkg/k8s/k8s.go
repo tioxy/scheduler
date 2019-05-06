@@ -8,7 +8,7 @@ import (
 	"k8s.io/client-go/rest"
 )
 
-const allNamespaces = ""
+const AllNamespaces = ""
 
 var err error
 

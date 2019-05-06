@@ -104,7 +104,7 @@ func TestFetchJob(t *testing.T) {
 	}
 }
 
-func TestGetJobs(t *testing.T) {
+func TestListJobs(t *testing.T) {
 	api := &KubernetesAPI{
 		Client: fake.NewSimpleClientset(),
 	}
@@ -143,7 +143,7 @@ func TestGetJobs(t *testing.T) {
 		}
 	}
 
-	jobsAllNamespaces, err := api.GetJobs(allNamespaces)
+	jobsAllNamespaces, err := api.ListJobs(AllNamespaces)
 	if err != nil {
 		t.Fatal(err.Error())
 	}
@@ -151,7 +151,7 @@ func TestGetJobs(t *testing.T) {
 		t.Fatal("The amount of Jobs created do not match the amount of Jobs received from all namespaces")
 	}
 
-	jobsDefaultNamespace, err := api.GetJobs("default")
+	jobsDefaultNamespace, err := api.ListJobs("default")
 	if err != nil {
 		t.Fatal(err.Error())
 	}

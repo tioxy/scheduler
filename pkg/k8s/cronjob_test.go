@@ -161,7 +161,7 @@ func TestFetchCronJob(t *testing.T) {
 	}
 }
 
-func TestGetCronJobs(t *testing.T) {
+func TestListCronJobs(t *testing.T) {
 	api := &KubernetesAPI{
 		Client: fake.NewSimpleClientset(),
 	}
@@ -202,7 +202,7 @@ func TestGetCronJobs(t *testing.T) {
 		}
 	}
 
-	cronJobsAllNamespaces, err := api.GetCronJobs(allNamespaces)
+	cronJobsAllNamespaces, err := api.ListCronJobs(AllNamespaces)
 	if err != nil {
 		t.Fatal(err.Error())
 	}
@@ -210,7 +210,7 @@ func TestGetCronJobs(t *testing.T) {
 		t.Fatal("The amount of CronJobs created do not match the amount of CronJobs received from all namespaces")
 	}
 
-	cronJobsDefaultNamespace, err := api.GetCronJobs("default")
+	cronJobsDefaultNamespace, err := api.ListCronJobs("default")
 	if err != nil {
 		t.Fatal(err.Error())
 	}

@@ -48,7 +48,7 @@ func (k KubernetesAPI) UpdateCronJob(sj scheduler.SimpleJob) error {
 	return nil
 }
 
-func (k KubernetesAPI) GetCronJobs(namespace string) ([]batchv1beta1.CronJob, error) {
+func (k KubernetesAPI) ListCronJobs(namespace string) ([]batchv1beta1.CronJob, error) {
 	cronJobList, err := k.Client.BatchV1beta1().CronJobs(namespace).List(metav1.ListOptions{})
 
 	if err != nil {
