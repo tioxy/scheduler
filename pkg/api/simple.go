@@ -120,3 +120,75 @@ func DeleteSimpleJob(c *gin.Context) {
 		},
 	)
 }
+
+func ListAllSimpleJobs(c *gin.Context) {
+	api := k8s.CreateKubernetesAPI()
+
+	log.Info().Msg("Listing SimpleJobs from all namespaces")
+	allJobs, err := api.ListJobs(k8s.AllNamespaces)
+
+	if err != nil {
+		log.Error().Msg("Failed listing SimpleJobs from all namespaces | " + err.Error())
+		c.JSON(
+			http.StatusUnprocessableEntity,
+			gin.H{
+				"status":  http.StatusUnprocessableEntity,
+				"message": "could not list simplejobs",
+				"error":   err.Error(),
+			},
+		)
+		return
+	}
+
+	simpleJobs := []scheduler.SimpleJob{}
+
+	for _, job := range allJobs {
+		simpleJobs = append(simpleJobs, scheduler.ConvertJobToSimpleJob(job))
+	}
+
+	c.JSON(
+		http.StatusOK,
+		gin.H{
+			"status":  http.StatusOK,
+			"message": "listed simplejobs",
+			"data":    simpleJobs,
+		},
+	)
+}
+
+func ListSimpleJobsFromNamespace(c *gin.Context) {
+	namespace := c.Params.ByName("namespace")
+
+	api := k8s.CreateKubernetesAPI()
+
+	log.Info().Msg("Listing SimpleJobs from namespace " + namespace)
+	namespacedJobs, err := api.ListJobs(namespace)
+
+	if err != nil {
+		log.Error().Msg("Failed listing SimpleJobs from single namespace | " + err.Error())
+		c.JSON(
+			http.StatusUnprocessableEntity,
+			gin.H{
+				"status":  http.StatusUnprocessableEntity,
+				"message": "could not list simplejobs from namespace",
+				"error":   err.Error(),
+			},
+		)
+		return
+	}
+
+	simpleJobs := []scheduler.SimpleJob{}
+
+	for _, job := range namespacedJobs {
+		simpleJobs = append(simpleJobs, scheduler.ConvertJobToSimpleJob(job))
+	}
+
+	c.JSON(
+		http.StatusOK,
+		gin.H{
+			"status":  http.StatusOK,
+			"message": "listed simplejobs from namespace",
+			"data":    simpleJobs,
+		},
+	)
+}
