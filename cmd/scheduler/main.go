@@ -8,6 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog"
 	"github.com/tioxy/scheduler/pkg/api"
+	"github.com/zsais/go-gin-prometheus"
 )
 
 var err error
@@ -15,17 +16,13 @@ var err error
 func main() {
 	r := gin.New()
 
-	// Control zerolog INFO/DEBUG by Gin env
 	zerolog.SetGlobalLevel(zerolog.InfoLevel)
 	if gin.IsDebugging() {
 		zerolog.SetGlobalLevel(zerolog.DebugLevel)
 	}
 
-	r.Use(ginLogger.SetLogger())
-
 	// Custom logger
 	subLog := zerolog.New(os.Stdout).With().Str("app", "scheduler").Logger()
-
 	r.Use(
 		ginLogger.SetLogger(
 			ginLogger.Config{
@@ -36,9 +33,13 @@ func main() {
 		),
 	)
 
+	// Custom metrics
+	prom := ginprometheus.NewPrometheus("gin")
+	prom.Use(r)
+
+	// Routes
 	r.GET("/", root)
 	r.GET("/healthz", healthCheck)
-	r.GET("/metrics", exportMetrics)
 
 	simpleV1 := r.Group("/api/v1/jobs/simple")
 	{
@@ -77,8 +78,4 @@ func healthCheck(c *gin.Context) {
 			"message": "ok",
 		},
 	)
-}
-
-func exportMetrics(c *gin.Context) {
-
 }
