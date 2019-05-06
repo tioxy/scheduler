@@ -42,12 +42,19 @@ simple_job_cron = {
 
 def main():
     methods = {
+        # Simple
         "create": create,
         "delete": delete,
         "fetch": fetch,
+        "list_all": list_all,
+        "list_default": list_default,
+        
+        # Scheduled
         "create_scheduled": create_scheduled,
         "delete_scheduled": delete_scheduled,
         "fetch_scheduled": fetch_scheduled,
+        "list_all_scheduled": list_all_scheduled,
+        "list_default_scheduled": list_default_scheduled,
         "update_scheduled": update_scheduled,
     }
     methods[METHOD]()
@@ -68,6 +75,24 @@ def fetch():
     """
     r = requests.get(
         f"{URL}{api_group}/simple/{simple_job['namespace']}/{simple_job['name']}",
+    )
+    print(r.text)
+
+def list_all():
+    """
+    List all SimpleJobs
+    """
+    r = requests.get(
+        f"{URL}{api_group}/simple/",
+    )
+    print(r.text)
+
+def list_default():
+    """
+    List SimpleJobs from namespace 'default'
+    """
+    r = requests.get(
+        f"{URL}{api_group}/simple/default",
     )
     print(r.text)
 
@@ -99,6 +124,33 @@ def fetch_scheduled():
     )
     print(r.text)
 
+def list_all_scheduled():
+    """
+    List all scheduled SimpleJobs
+    """
+    r = requests.get(
+        f"{URL}{api_group}/scheduled/",
+    )
+    print(r.text)
+
+def list_default_scheduled():
+    """
+    List scheduled SimpleJobs from namespace 'default'
+    """
+    r = requests.get(
+        f"{URL}{api_group}/scheduled/default",
+    )
+    print(r.text)
+
+def delete_scheduled():
+    """
+    Delete a scheduled SimpleJob
+    """
+    r = requests.delete(
+        f"{URL}{api_group}/scheduled/{simple_job_cron['namespace']}/{simple_job_cron['name']}",
+    )
+    print(r.text)
+
 def update_scheduled():
     """
     Update a scheduled SimpleJob
@@ -109,15 +161,6 @@ def update_scheduled():
     r = requests.put(
         f"{URL}{api_group}/scheduled/{simple_job_cron['namespace']}/{simple_job_cron['name']}",
         data=json.dumps(simple_job_cron),
-    )
-    print(r.text)
-
-def delete_scheduled():
-    """
-    Delete a scheduled SimpleJob
-    """
-    r = requests.delete(
-        f"{URL}{api_group}/scheduled/{simple_job_cron['namespace']}/{simple_job_cron['name']}",
     )
     print(r.text)
 
