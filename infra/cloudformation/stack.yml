@@ -1,0 +1,115 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Setup Kubernetes cluster infrastructure to deploy tioxy/scheduler
+Parameters:
+  VPCCIDR:
+    Description: CIDR block
+    Type: String
+    Default: 10.56.0.0/16
+  PublicSubnetCIDR:
+    Description: Public Subnet CIDR block
+    Type: String
+    Default: 10.56.0.0/24
+    ConstraintDescription: Must match VPC range
+  PrivateSubnetCIDR:
+    Description: Private Subnet CIDR block
+    Type: String
+    Default: 10.56.1.0/24
+    ConstraintDescription: Must match VPC range
+
+Resources:
+  #
+  # EC2 IAM Role for Kubernetes Nodes
+  #
+  BaseInstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    DependsOn: KubernetesNodeRole
+    Properties:
+      InstanceProfileName: kubernetes-node
+      Roles:
+        - !Ref KubernetesNodeRole
+  KubernetesNodeRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: kubernetes-node
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Action:
+              - sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service:
+                - ec2.amazonaws.com
+  #
+  # cluster-autoscaler IAM Policy to provision new instances when Pods can't be scheduled 
+  # (https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler/cloudprovider/aws#attach-iam-policy-to-nodegroup)
+  #
+  ClusterAutoscalerPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: kubernetes-cluster-autoscaler
+      Roles:
+        - !Ref KubernetesNodeRole
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action:
+              - "autoscaling:DescribeAutoScalingGroups"
+              - "autoscaling:DescribeAutoScalingInstances"
+              - "autoscaling:DescribeTags"
+              - "autoscaling:SetDesiredCapacity"
+              - "autoscaling:TerminateInstanceInAutoScalingGroup"
+            Resource: "*"
+  #
+  # VPC
+  #
+  KubernetesVPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: !Ref VPCCIDR
+      EnableDnsSupport: "true"
+      EnableDnsHostnames: "true"
+      Tags:
+        - Key: VPC
+          Value: kubernetes-vpc
+        - Key: Name
+          Value: kubernetes-vpc
+
+  #
+  # IGW (Internet Gateway)
+  #
+  KubernetesInternetGateway:
+    Type: AWS::EC2::InternetGateway
+  KubernetesAttachGateway:
+    Type: AWS::EC2::VPCGatewayAttachment
+    DependsOn:
+      - KubernetesVPC
+      - KubernetesInternetGateway
+    Properties:
+      VpcId: !Ref KubernetesVPC
+      InternetGatewayId: !Ref KubernetesInternetGateway
+
+  #
+  # One pair of Subnets (public/private)
+  #
+  KubernetesPublicSubnet:
+    Type: AWS::EC2::Subnet
+    DependsOn: KubernetesVPC
+    Properties:
+      VpcId: !Ref KubernetesVPC
+      CidrBlock: !Ref PublicSubnetCIDR
+      AvailabilityZone: !Sub ${AWS::Region}a
+      Tags:
+        - Key: Name
+          Value: !Sub kubernetes-vpc.public-${AWS::Region}a
+  KubernetesPrivateSubnet:
+    Type: AWS::EC2::Subnet
+    DependsOn: KubernetesVPC
+    Properties:
+      VpcId: !Ref KubernetesVPC
+      CidrBlock: !Ref PrivateSubnetCIDR
+      AvailabilityZone: !Sub ${AWS::Region}a
+      Tags:
+        - Key: Name
+          Value: !Sub kubernetes-vpc.private-${AWS::Region}a
