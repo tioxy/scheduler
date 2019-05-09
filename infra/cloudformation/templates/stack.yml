@@ -107,3 +107,51 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub kubernetes-vpc.private-${AWS::Region}a
+
+  #
+  # NAT Gateway
+  #
+  KubernetesNATGateway:
+    Type: AWS::EC2::NatGateway
+    Properties:
+       AllocationId: !GetAtt KubernetesNATGatewayEIP.AllocationId
+       SubnetId: !Ref KubernetesPublicSubnet
+       Tags:
+          - Key: Name
+            Value: !Sub kubernetes-vpc.nat-${AWS::Region}a
+  KubernetesNATGatewayEIP:
+   DependsOn: KubernetesAttachGateway
+   Type: AWS::EC2::EIP
+   Properties:
+      Domain: vpc
+
+  #
+  # Route Tables
+  #
+  KubernetesPublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref KubernetesVPC
+      Tags:
+      - Key: Name
+        Value: kubernetes-vpc.public
+  KubernetesPrivateRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref KubernetesVPC
+      Tags:
+      - Key: Name
+        Value: kubernetes-vpc.private
+
+  KubernetesPublicRouteTableRouteIGW:
+    Type: AWS::EC2::Route
+    Properties:
+       DestinationCidrBlock: 0.0.0.0/0
+       GatewayId: !Ref KubernetesInternetGateway
+       RouteTableId: !Ref KubernetesPublicRouteTable
+  KubernetesPrivateRouteTableRouteNAT:
+    Type: AWS::EC2::Route
+    Properties:
+       DestinationCidrBlock: 0.0.0.0/0
+       NatGatewayId: !Ref KubernetesNATGateway
+       RouteTableId: !Ref KubernetesPrivateRouteTable
