@@ -13,3 +13,6 @@
 
 # Output binary
 /scheduler
+
+# Cloudformation Test with Taskcat
+taskcat_outputs

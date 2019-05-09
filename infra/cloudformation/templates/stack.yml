@@ -22,7 +22,6 @@ Resources:
   #
   BaseInstanceProfile:
     Type: AWS::IAM::InstanceProfile
-    DependsOn: KubernetesNodeRole
     Properties:
       InstanceProfileName: kubernetes-node
       Roles:
@@ -68,8 +67,8 @@ Resources:
     Type: AWS::EC2::VPC
     Properties:
       CidrBlock: !Ref VPCCIDR
-      EnableDnsSupport: "true"
-      EnableDnsHostnames: "true"
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
       Tags:
         - Key: VPC
           Value: kubernetes-vpc
@@ -83,9 +82,6 @@ Resources:
     Type: AWS::EC2::InternetGateway
   KubernetesAttachGateway:
     Type: AWS::EC2::VPCGatewayAttachment
-    DependsOn:
-      - KubernetesVPC
-      - KubernetesInternetGateway
     Properties:
       VpcId: !Ref KubernetesVPC
       InternetGatewayId: !Ref KubernetesInternetGateway
@@ -95,7 +91,6 @@ Resources:
   #
   KubernetesPublicSubnet:
     Type: AWS::EC2::Subnet
-    DependsOn: KubernetesVPC
     Properties:
       VpcId: !Ref KubernetesVPC
       CidrBlock: !Ref PublicSubnetCIDR
@@ -105,7 +100,6 @@ Resources:
           Value: !Sub kubernetes-vpc.public-${AWS::Region}a
   KubernetesPrivateSubnet:
     Type: AWS::EC2::Subnet
-    DependsOn: KubernetesVPC
     Properties:
       VpcId: !Ref KubernetesVPC
       CidrBlock: !Ref PrivateSubnetCIDR

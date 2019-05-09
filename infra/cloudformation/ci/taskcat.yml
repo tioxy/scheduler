@@ -1,0 +1,10 @@
+---
+global:
+  owner: gabrieltiossi@gmail.com
+  qsname: scheduler
+  regions:
+    - us-west-2
+tests:
+  scenario:
+    parameter_input: input.json
+    template_file: stack.yml
