@@ -15,6 +15,19 @@ Parameters:
     Type: String
     Default: 10.56.1.0/24
     ConstraintDescription: Must match VPC range
+  MasterInstanceSize:
+    Description: Kubernetes Master instance size
+    Type: String
+    Default: t3.medium
+  KeyPairName:
+    Description: EC2 Key Pair name used to create instances
+    Type: AWS::EC2::KeyPair::KeyName
+    Default: se-devops-test
+  InstanceAMI:
+    Description: Debian-based AMI ID to provision master and instances in your region
+    Type: AWS::EC2::Image::Id
+    Default: ami-04d80a559c47603e4 # Debian 9 amd64 for us-west-2
+    ConstraintDescription: Refer to https://wiki.debian.org/Cloud/AmazonEC2Image/Stretch#Stretch
 
 Resources:
   #
@@ -155,3 +168,60 @@ Resources:
        DestinationCidrBlock: 0.0.0.0/0
        NatGatewayId: !Ref KubernetesNATGateway
        RouteTableId: !Ref KubernetesPrivateRouteTable
+
+
+  #
+  # EC2
+  #
+  KubernetesSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: kubernetes-node
+      GroupDescription: Kubernetes required rules to communicate nodes
+      VpcId: !Ref KubernetesVPC
+      SecurityGroupEgress:
+      - Description: Anywhere
+        CidrIp: "0.0.0.0/0"
+        IpProtocol: "-1"
+        FromPort: 0
+        ToPort: 65535 
+      SecurityGroupIngress:
+      - Description: VPC All Traffic
+        CidrIp: !Ref VPCCIDR
+        IpProtocol: "-1"
+        FromPort: 0
+        ToPort: 65535 
+      Tags:
+      - Key: Name
+        Value: kubernetes-node
+
+  KubernetesMaster:
+    Type: AWS::EC2::Instance
+    Properties:
+      AvailabilityZone: !Sub ${AWS::Region}a
+      BlockDeviceMappings:
+      - DeviceName: /dev/sda1 # Root (/)
+        Ebs:
+          VolumeSize: 50
+          VolumeType: gp2
+          DeleteOnTermination: true
+          Encrypted: false        
+      - DeviceName: /dev/sdb # CRI (/var/lib/containers)
+        Ebs:
+          VolumeSize: 50
+          VolumeType: gp2
+          DeleteOnTermination: true
+          Encrypted: false
+      CreditSpecification:
+        CPUCredits: standard
+      IamInstanceProfile: !Ref BaseInstanceProfile
+      ImageId: !Ref InstanceAMI
+      InstanceType: !Ref MasterInstanceSize
+      KeyName: !Ref KeyPairName
+      SecurityGroupIds:
+      - !GetAtt KubernetesSecurityGroup.GroupId
+      SubnetId: !Ref KubernetesPublicSubnet
+      Tags:
+      - Key: Name
+        Value: kubernetes-master
+      #UserData: provision-master-automatically    WIP
