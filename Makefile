@@ -15,8 +15,15 @@ DOCKERFILE_CONTEXT=.
 IMAGE_REPO=tioxy/scheduler
 IMAGE_TAG=latest
 
+AWS_DEFAULT_REGION=us-west-2
+
 CLOUDFORMATION_FOLDER=infra/cloudformation
 CLOUDFORMATION_TASKCAT_FILE=$(CLOUDFORMATION_FOLDER)/ci/taskcat.yml
+
+PACKER_FOLDER=infra/packer
+PACKER_DEFAULT_DISTRO=debian
+PACKER_AWS_ACCESS_KEY=YOURACCESSKEY
+PACKER_AWS_SECRET_KEY=YOURSECRETKEY
 
 all: test build
 
@@ -31,6 +38,13 @@ build-image:
 			-t "$(IMAGE_REPO):$(IMAGE_TAG)" \
 			-f $(DOCKERFILE) $(DOCKERFILE_CONTEXT) \
 			--build-arg IN_BINARY=$(BINARY_UNIX)
+build-ami:
+		packer build \
+			-var 'aws_access_key=$(PACKER_AWS_ACCESS_KEY)' \
+			-var 'aws_secret_key=$(PACKER_AWS_SECRET_KEY)' \
+			-var 'aws_region=$(AWS_DEFAULT_REGION)' \
+			-var 'instance_type=t3.micro' \
+			$(PACKER_FOLDER)/$(PACKER_DEFAULT_DISTRO)-base.json
 
 clean: 
 		$(GOCLEAN)

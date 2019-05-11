@@ -1,0 +1,48 @@
+{
+    "variables": {
+      "aws_access_key": "{{env `AWS_ACCESS_KEY_ID`}}",
+      "aws_secret_key": "{{env `AWS_SECRET_ACCESS_KEY`}}",
+      "aws_region": "us-west-2",
+      "instance_type": "t3.micro"
+    },
+    "builders": [
+        {
+            "name": "kubernetes-base-image",
+            "type": "amazon-ebs",
+
+            "ami_name": "Kubernetes Base - Debian - {{timestamp}}",
+
+            "access_key": "{{user `aws_access_key`}}",
+            "secret_key": "{{user `aws_secret_key`}}",
+            "region": "{{user `aws_region`}}",
+
+            "source_ami_filter": {
+                "filters": {
+                    "virtualization-type": "hvm",
+                    "name": "debian-stretch-hvm-x86_64-gp2-*",
+                    "root-device-type": "ebs"
+                },
+                "owners": ["379101102735"],
+                "most_recent": true
+            },
+            
+            "launch_block_device_mappings": [
+                {
+                    "device_name": "xvda",
+                    "volume_size": "50",
+                    "volume_type": "gp2",
+                    "delete_on_termination": true
+                },
+                {
+                    "device_name": "/dev/sdb",
+                    "volume_size": "50",
+                    "volume_type": "gp2",
+                    "delete_on_termination": true
+                }
+            ],
+
+            "ssh_username": "admin",
+            "instance_type": "{{user `instance_type`}}"
+        }
+    ]
+}
