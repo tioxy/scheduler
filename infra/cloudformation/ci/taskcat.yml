@@ -10,3 +10,7 @@ tests:
       - us-west-2
     parameter_input: us-west-2-input.json
     template_file: stack.yml
+  packer-scenario:
+    regions:
+      - us-west-2
+    template_file: packer.yml
