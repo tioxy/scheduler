@@ -16,3 +16,6 @@
 
 # Cloudformation Test with Taskcat
 taskcat_outputs
+
+# Python cache
+__pycache__
