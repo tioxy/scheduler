@@ -1,0 +1,10 @@
+---
+kube_gpg_key: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+kube_repository: deb https://apt.kubernetes.io/ kubernetes-xenial main
+kube_requirements:
+  - apt-transport-https
+  - curl
+kube_packages:
+  - kubelet
+  - kubeadm
+  - kubectl

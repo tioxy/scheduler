@@ -1,0 +1,6 @@
+---
+- hosts: all
+
+  roles:
+    - { role: docker, become: yes }
+    - { role: kube-stack, become: yes }

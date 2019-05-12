@@ -1,0 +1,38 @@
+---
+- name: Update apt cache
+  apt:
+    update_cache: yes
+  become: true
+
+- name: Install kubernetes requirements
+  apt:
+    name: "{{ kube_requirements }}"
+    state: present
+  become: true
+
+- name: Add kubernetes gpg key
+  apt_key:
+    url: "{{ kube_gpg_key }}"
+    state: present
+  become: true
+
+- name: Add kube repository
+  apt_repository:
+    repo: "{{ kube_repository }}"
+    state: present
+    filename: kubernetes
+    update_cache: yes
+  become: true
+
+- name: Install kube packages
+  apt:
+    name: "{{ kube_packages }}"
+    state: present
+  become: true
+
+- name: Prevent kube packages to update
+  dpkg_selections:
+    name: "{{ item }}"
+    selection: hold
+  loop: "{{ kube_packages }}"
+  become: true
