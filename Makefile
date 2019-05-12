@@ -25,6 +25,9 @@ PACKER_DEFAULT_DISTRO=debian
 PACKER_AWS_ACCESS_KEY=YOURACCESSKEY
 PACKER_AWS_SECRET_KEY=YOURSECRETKEY
 
+ANSIBLE_FOLDER=infra/ansible
+ANSIBLE_ROLE=kube-stack
+
 all: test build
 
 build: 
@@ -69,3 +72,6 @@ test:
 		$(GOTEST) -count=1 -v ./...
 test-cf:
 		taskcat -c $(CLOUDFORMATION_TASKCAT_FILE)
+test-role:
+		cd $(ANSIBLE_FOLDER)/roles/$(ANSIBLE_ROLE); \
+			molecule test
