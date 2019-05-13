@@ -4,6 +4,7 @@ kube_repository: deb https://apt.kubernetes.io/ kubernetes-xenial main
 kube_requirements:
   - apt-transport-https
   - curl
+  - cloud-init
 kube_packages:
   - kubelet
   - kubeadm
