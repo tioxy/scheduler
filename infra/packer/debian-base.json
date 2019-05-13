@@ -3,7 +3,8 @@
       "aws_access_key": "{{env `AWS_ACCESS_KEY_ID`}}",
       "aws_secret_key": "{{env `AWS_SECRET_ACCESS_KEY`}}",
       "aws_region": "us-west-2",
-      "instance_type": "t3.micro"
+      "instance_type": "t3.micro",
+      "ansible_playbook_base": "infra/ansible/base.yml"
     },
     "builders": [
         {
@@ -29,13 +30,7 @@
             "launch_block_device_mappings": [
                 {
                     "device_name": "xvda",
-                    "volume_size": "50",
-                    "volume_type": "gp2",
-                    "delete_on_termination": true
-                },
-                {
-                    "device_name": "/dev/sdb",
-                    "volume_size": "50",
+                    "volume_size": "100",
                     "volume_type": "gp2",
                     "delete_on_termination": true
                 }
@@ -43,6 +38,12 @@
 
             "ssh_username": "admin",
             "instance_type": "{{user `instance_type`}}"
+        }
+    ],
+    "provisioners": [
+        {
+            "type": "ansible",
+            "playbook_file": "{{user `ansible_playbook_base`}}"
         }
     ]
 }
