@@ -15,7 +15,7 @@ DOCKERFILE_CONTEXT=.
 IMAGE_REPO=tioxy/scheduler
 IMAGE_TAG=latest
 
-AWS_DEFAULT_REGION=us-west-2
+AWS_REGION=us-west-2
 AWS_KEYPAIR_NAME=se-devops-test
 
 CLOUDFORMATION_FOLDER=infra/cloudformation
@@ -50,14 +50,14 @@ build-ami:
 		packer build \
 			-var 'aws_access_key=$(PACKER_AWS_ACCESS_KEY)' \
 			-var 'aws_secret_key=$(PACKER_AWS_SECRET_KEY)' \
-			-var 'aws_region=$(AWS_DEFAULT_REGION)' \
+			-var 'aws_region=$(AWS_REGION)' \
 			-var 'instance_type=t3.micro' \
 			-var 'ansible_playbook_base=$(ANSIBLE_FOLDER)/base.yml' \
 			$(PACKER_FOLDER)/$(PACKER_DEFAULT_DISTRO)-base.json
 build-infra:
 		aws cloudformation deploy \
 		    --stack-name $(CLOUDFORMATION_STACK_NAME) \
-		    --region $(AWS_DEFAULT_REGION) \
+		    --region $(AWS_REGION) \
 		    --capabilities CAPABILITY_NAMED_IAM \
 		    --template-file $(CLOUDFORMATION_FOLDER)/templates/stack.yml \
 			--parameter-overrides \
@@ -76,7 +76,7 @@ clean-image:
 clean-infra:
 		aws cloudformation delete-stack \
 			--stack-name $(CLOUDFORMATION_STACK_NAME) \
-		    --region $(AWS_DEFAULT_REGION)
+		    --region $(AWS_REGION)
 
 gen-image:
 		$(MAKE) -f $(MAKEFILE) test
@@ -85,7 +85,7 @@ gen-image:
 		$(MAKE) -f $(MAKEFILE) clean
 
 get-ami:
-		@python $(SCRIPTS_FOLDER)/latest_base_ami.py $(AWS_DEFAULT_REGION)
+		@python $(SCRIPTS_FOLDER)/latest_base_ami.py $(AWS_REGION)
 
 push-image:
 		docker image push "$(IMAGE_REPO):$(IMAGE_TAG)"
