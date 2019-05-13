@@ -47,6 +47,7 @@ build-ami:
 			-var 'aws_secret_key=$(PACKER_AWS_SECRET_KEY)' \
 			-var 'aws_region=$(AWS_DEFAULT_REGION)' \
 			-var 'instance_type=t3.micro' \
+			-var 'ansible_playbook_base=$(ANSIBLE_FOLDER)/base.yml' \
 			$(PACKER_FOLDER)/$(PACKER_DEFAULT_DISTRO)-base.json
 
 clean: 
