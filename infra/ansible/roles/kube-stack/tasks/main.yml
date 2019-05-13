@@ -36,3 +36,9 @@
     selection: hold
   loop: "{{ kube_packages }}"
   become: true
+
+- name: Copy kubeadm-config to host
+  copy:
+    src: kubeadm-config.yml
+    dest: /opt/kubeadm-config.yml
+  become: true
