@@ -87,6 +87,12 @@ gen-image:
 get-ami:
 		@python $(SCRIPTS_FOLDER)/latest_base_ami.py $(AWS_REGION)
 
+import-keypair:
+		aws ec2 import-key-pair \
+			--key-name $(AWS_KEYPAIR_NAME) \
+			--region $(AWS_REGION) \
+			--public-key-material file://$(PUBLIC_KEY_FILE)
+
 push-image:
 		docker image push "$(IMAGE_REPO):$(IMAGE_TAG)"
 
