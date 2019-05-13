@@ -1,0 +1,8 @@
+---
+docker_gpg_key: https://download.docker.com/linux/debian/gpg
+docker_repository: deb [arch=amd64] https://download.docker.com/linux/debian stretch stable
+docker_requirements:
+  - apt-transport-https
+  - ca-certificates
+  - curl
+  - software-properties-common

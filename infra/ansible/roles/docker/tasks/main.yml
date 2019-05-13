@@ -1,0 +1,57 @@
+---
+- name: Update apt cache
+  apt:
+    update_cache: yes
+  become: true
+
+- name: Install docker requirements
+  apt:
+    name: "{{ docker_requirements }}"
+    state: present
+  become: true
+
+- name: Add docker gpg key
+  apt_key:
+    url: "{{ docker_gpg_key }}"
+    state: present
+  become: true
+
+- name: Add docker repository
+  apt_repository:
+    repo: "{{ docker_repository }}"
+    state: present
+    filename: docker
+    update_cache: yes
+  become: true
+
+- name: Install docker
+  apt:
+    name: docker-ce
+    state: present
+  become: true
+
+- name: Create /etc/docker folder
+  file:
+    state: directory
+    path: /etc/docker/
+  become: true
+
+- name: Copy daemon.json to host
+  copy:
+    src: daemon.json
+    dest: /etc/docker/daemon.json
+  become: true
+
+- name: Create systemd Docker folder
+  file:
+    state: directory
+    path: /etc/systemd/system/docker.service.d
+  become: true
+
+- name: Start docker service
+  systemd:
+    name: docker
+    state: started
+    # daemon_reload: yes
+    enabled: yes
+  become: true
