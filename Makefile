@@ -16,15 +16,17 @@ IMAGE_REPO=tioxy/scheduler
 IMAGE_TAG=latest
 
 AWS_DEFAULT_REGION=us-west-2
-AWS_PROFILE=default
+AWS_KEYPAIR_NAME=se-devops-test
 
 CLOUDFORMATION_FOLDER=infra/cloudformation
 CLOUDFORMATION_TASKCAT_FILE=$(CLOUDFORMATION_FOLDER)/ci/taskcat.yml
+CLOUDFORMATION_STACK_NAME=kubernetes-scheduler
 
 PACKER_FOLDER=infra/packer
 PACKER_DEFAULT_DISTRO=debian
 PACKER_AWS_ACCESS_KEY=YOURACCESSKEY
 PACKER_AWS_SECRET_KEY=YOURSECRETKEY
+PACKER_BASE_AMI_ID=YOURAMIID
 
 ANSIBLE_FOLDER=infra/ansible
 ANSIBLE_ROLE=kube-stack
@@ -52,6 +54,15 @@ build-ami:
 			-var 'instance_type=t3.micro' \
 			-var 'ansible_playbook_base=$(ANSIBLE_FOLDER)/base.yml' \
 			$(PACKER_FOLDER)/$(PACKER_DEFAULT_DISTRO)-base.json
+build-infra:
+		aws cloudformation deploy \
+		    --stack-name $(CLOUDFORMATION_STACK_NAME) \
+		    --region $(AWS_DEFAULT_REGION) \
+		    --capabilities CAPABILITY_NAMED_IAM \
+		    --template-file $(CLOUDFORMATION_FOLDER)/templates/stack.yml \
+			--parameter-overrides \
+				InstanceAMI=$(PACKER_BASE_AMI_ID) \
+				KeyPairName=$(AWS_KEYPAIR_NAME)
 
 clean: 
 		$(GOCLEAN)
@@ -62,6 +73,10 @@ clean:
 clean-image:
 		docker image rm -f "$(IMAGE_REPO):$(IMAGE_TAG)"
 		docker image prune -f
+clean-infra:
+		aws cloudformation delete-stack \
+			--stack-name $(CLOUDFORMATION_STACK_NAME) \
+		    --region $(AWS_DEFAULT_REGION)
 
 gen-image:
 		$(MAKE) -f $(MAKEFILE) test
@@ -70,7 +85,7 @@ gen-image:
 		$(MAKE) -f $(MAKEFILE) clean
 
 get-ami:
-		@python $(SCRIPTS_FOLDER)/latest_base_ami.py $(AWS_DEFAULT_REGION) $(AWS_PROFILE)
+		@python $(SCRIPTS_FOLDER)/latest_base_ami.py $(AWS_DEFAULT_REGION)
 
 push-image:
 		docker image push "$(IMAGE_REPO):$(IMAGE_TAG)"

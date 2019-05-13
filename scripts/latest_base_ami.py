@@ -1,18 +1,16 @@
 #
-# Usage: latest_base_ami.py <REGION> <PROFILE>
-# Ex: latest_base_ami.py us-west-2 default
+# Usage: latest_base_ami.py <REGION>
+# Ex: latest_base_ami.py us-west-2
 #
 import boto3
 import sys
 
 
 REGION = sys.argv[1]
-PROFILE = sys.argv[2]
 
 
 def main():
     session = boto3.Session(
-        profile_name=PROFILE,
         region_name=REGION,
     )
     ec2 = session.client('ec2')
