@@ -16,7 +16,7 @@ def main():
         region_name=REGION,
     )
     ec2 = session.client('ec2')
-    res = ec2.describe_images(
+    images = ec2.describe_images(
         Filters=[
             {
                 'Name': 'name',
@@ -32,7 +32,10 @@ def main():
             },
         ],
     )['Images']
-    base_images = sorted(res, key=lambda x: x['CreationDate'], reverse=True)
+    if not images:
+        print("You do not have any Kubernetes Base image. Run 'make build-ami' to create one.")
+        exit(1)
+    base_images = sorted(images, key=lambda x: x['CreationDate'], reverse=True)
     print(base_images[0]['ImageId'])
 
 if __name__ == "__main__":
