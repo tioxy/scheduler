@@ -16,6 +16,7 @@ IMAGE_REPO=tioxy/scheduler
 IMAGE_TAG=latest
 
 AWS_DEFAULT_REGION=us-west-2
+AWS_PROFILE=default
 
 CLOUDFORMATION_FOLDER=infra/cloudformation
 CLOUDFORMATION_TASKCAT_FILE=$(CLOUDFORMATION_FOLDER)/ci/taskcat.yml
@@ -27,6 +28,8 @@ PACKER_AWS_SECRET_KEY=YOURSECRETKEY
 
 ANSIBLE_FOLDER=infra/ansible
 ANSIBLE_ROLE=kube-stack
+
+SCRIPTS_FOLDER=scripts
 
 all: test build
 
@@ -65,6 +68,9 @@ gen-image:
 		$(MAKE) -f $(MAKEFILE) build-linux
 		$(MAKE) -f $(MAKEFILE) build-image
 		$(MAKE) -f $(MAKEFILE) clean
+
+get-ami:
+		@python $(SCRIPTS_FOLDER)/latest_base_ami.py $(AWS_DEFAULT_REGION) $(AWS_PROFILE)
 
 push-image:
 		docker image push "$(IMAGE_REPO):$(IMAGE_TAG)"
