@@ -6,7 +6,7 @@ Scheduler is an API which abstracts the concepts of Kubernetes Jobs and CronJobs
     - [Prerequisites](README.md#prerequisites)
 - [Getting Started](README.md#getting-started)
     - [Baking Image](README.md#baking-image)
-    - Deploying Infrastructure
+    - [Deploying Infrastructure](README.md#deploying-infrastructure)
     - Deploying API
 - Local Development
     - Testing
@@ -106,7 +106,22 @@ $ make clean-cf CLOUDFORMATION_STACK_NAME=packer-creds
 
 ### [Deploying Infrastructure](#deploying-infrastructure)
 
-WIP
+There is a [Cloudformation template](infra/cloudformation/templates/stack.yml) to bootstrap the entire cluster composed of:
+- VPC (Subnets, Route Tables, Internet Gateway, NAT Gateway)
+- IAM Role & Instance Profile for Nodes
+- Master Node (helm and cluster-autoscaler configured automatically)
+- Auto Scaling Group for Worker Nodes
+
+```bash
+$ make build-cluster AWS_KEYPAIR_NAME=mykey PACKER_BASE_AMI_ID=$(make get-ami)
+```
+
+This template support multiple parameters like *Master Instance Size* and *Kubeadm Token*, but the defaults should support most deployments. If you want to customize it, deploy the [Cloudformation template](infra/cloudformation/templates/stack.yml) manually through the console or using [aws cloudformation deploy](https://docs.aws.amazon.com/cli/latest/reference/cloudformation/deploy/index.html).
+
+The average time to deploy the whole infrastructure is 13 minutes, made of:
+- Cloudformation ≈ 7 min
+- Master & Worker node ≈ 5 min
+- Tiller & cluster-autoscaler ≈ 1 min
 
 <br>
 
