@@ -56,7 +56,7 @@ If you already have a Kubernetes cluster running, you can jump to [Deploying API
 ### [Baking Image](#baking-image)
 In this step, we will bake the *Kubernetes Base* AMI which will be used for Master and Workers nodes in the cluster.
 
-Make sure your packer is installed by running:
+#### 1. Make sure your packer is installed by running:
 ```bash
 $ packer version
 Packer v1.4.0
@@ -66,12 +66,12 @@ There is a [Cloudformation template](infra/cloudformation/templates/packer.yml) 
 - Packer IAM User
 - Packer IAM Policy
 
-To bootstrap Packer IAM credentials through the Cloudformation template, run:
+#### 2. To bootstrap Packer IAM credentials through the Cloudformation template, run:
 ```bash
 $ make packer-creds CLOUDFORMATION_STACK_NAME=packer-creds
 ```
 
-Get the AWS Access Key and Secret Key from the generated template by running:
+#### 3. Get the AWS Access Key and Secret Key from the generated template by running:
 ```bash
 $ make get-packer-creds CLOUDFORMATION_STACK_NAME=packer-creds
 [
@@ -86,12 +86,12 @@ $ make get-packer-creds CLOUDFORMATION_STACK_NAME=packer-creds
 ]
 ```
 
-With Packer installed and credentials set up, you can bake the AMI using the credentials from the previous output:
+#### 4. With Packer installed and credentials set up, you can bake the AMI using the credentials from the previous output:
 ```bash
 $ make build-ami PACKER_AWS_ACCESS_KEY="YOURACCESSKEY" PACKER_AWS_SECRET_KEY="YOURSECRETKEY"
 ```
 
-A [python script](scripts/latest_base_ami.py) was created to check if your AMI was created successfully and always show the latest of them:
+#### 5. A [python script](scripts/latest_base_ami.py) was created to check if your AMI was created successfully and always show the latest of them:
 ```bash
 $ make get-ami
 ami-y0uram1idw1llb3h3re
@@ -112,16 +112,17 @@ There is a [Cloudformation template](infra/cloudformation/templates/stack.yml) t
 - Master Node (helm and cluster-autoscaler configured automatically)
 - Auto Scaling Group for Worker Nodes
 
+#### 1. Create the cluster from the Cloudformation template:
 ```bash
 $ make build-cluster AWS_KEYPAIR_NAME=mykey PACKER_BASE_AMI_ID=$(make get-ami)
 ```
 
 This template support multiple parameters like *Master Instance Size* and *Kubeadm Token*, but the defaults should support most deployments. If you want to customize it, deploy the [Cloudformation template](infra/cloudformation/templates/stack.yml) manually through the console or using [aws cloudformation deploy](https://docs.aws.amazon.com/cli/latest/reference/cloudformation/deploy/index.html).
 
-The average time to deploy the whole infrastructure is 13 minutes, made of:
-- Cloudformation ≈ 7 min
-- Master & Worker node ≈ 5 min
-- Tiller & cluster-autoscaler ≈ 1 min
+The average time to deploy the whole infrastructure is **13 minutes**, made of:
+- Cloudformation ≈ **7 min**
+- Master & Worker node ≈ **5 min**
+- Tiller & cluster-autoscaler ≈ **1 min**
 
 *OPTIONAL: If you want to clean the Cloudformation created from **make build-cluster**:*
 ```bash
@@ -134,24 +135,48 @@ $ make clean-cf
 
 The scheduler is deployed using a Helm Chart which works on any Kubernetes cluster with Tiller successfully deployed. The chart folder is located at ```deployments/chart/scheduler/```. There is a [documentation](deployments/chart/scheduler/README.md) of Chart Values if you need to customize them.
 
-Installing the scheduler and exposing it through a LoadBalancer *(Balancers are automatically created by your Cloud Provider if the cluster is configured properly)*:
+#### AWS
+Balancers are automatically created by AWS if the cluster is configured properly, and may take some minutes to attach the nodes and expose the service.
+
+
+1. Install the scheduler and exposing it through a LoadBalancer:
 ```bash
 $ helm upgrade --install scheduler deployments/chart/scheduler --namespace default --set service.type=LoadBalancer
 ```
 
-If you want a raw installation to check if everything is running (recommended for Minikube installation):
+2. Get Load Balancer address by getting the Kubernetes service: 
+```
+$ kubectl get svc/scheduler -o wide
+NAME        TYPE           CLUSTER-IP       EXTERNAL-IP                                                        PORT(S)
+scheduler   LoadBalancer   100.99.98.97     yourLoadBalancerInAws.us-west-2.elb.amazonaws.com   80:31196/TCP   5m
+```
+
+3. Test the Health Check endpoint:
+```bash
+# For AWS Load Balancer
+$ curl http://yourLoadBalancerInAws.us-west-2.elb.amazonaws.com:8080/healthz
+{"message":"ok","status":200}
+```
+
+#### Minikube
+1. Install the scheduler without exposing it:
 ```bash
 $ helm upgrade --install scheduler deployments/chart/scheduler --namespace default
 ```
 
-Testing locally with your Minikube requires Service port-forward using kubectl:
+2. Expose the scheduler service using Kubernetes port-forward via kubectl:
 ```bash
 $ kubectl port-forward svc/scheduler 8080:8080 --namespace default
+```
 
+3. Test the Health Check endpoint:
+```bash
+# For Minikube port-forward
 $ curl http://localhost:8080/healthz
 {"message":"ok","status":200}
 ```
 
+#### Clean API deployment
 *OPTIONAL: With your kubectl configured, you can delete the Scheduler from your cluster:*
 ```bash
 $ helm delete --purge scheduler
