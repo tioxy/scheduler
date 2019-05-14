@@ -5,6 +5,9 @@ GOBUILD=$(GOCMD) build
 GOCLEAN=$(GOCMD) clean
 GOTEST=$(GOCMD) test
 
+POETRY=poetry
+POETRYRUN=$(POETRY) run
+
 BINARY_NAME=scheduler
 BINARY_DARWIN=$(BINARY_NAME)_darwin
 BINARY_UNIX=$(BINARY_NAME)_unix
@@ -47,6 +50,7 @@ build-image:
 			-f $(DOCKERFILE) $(DOCKERFILE_CONTEXT) \
 			--build-arg IN_BINARY=$(BINARY_UNIX)
 build-ami:
+		$(POETRYRUN) \
 		packer build \
 			-var 'aws_access_key=$(PACKER_AWS_ACCESS_KEY)' \
 			-var 'aws_secret_key=$(PACKER_AWS_SECRET_KEY)' \
@@ -55,6 +59,7 @@ build-ami:
 			-var 'ansible_playbook_base=$(ANSIBLE_FOLDER)/base.yml' \
 			$(PACKER_FOLDER)/$(PACKER_DEFAULT_DISTRO)-base.json
 build-infra:
+		$(POETRYRUN) \
 		aws cloudformation deploy \
 		    --stack-name $(CLOUDFORMATION_STACK_NAME) \
 		    --region $(AWS_REGION) \
@@ -74,6 +79,7 @@ clean-image:
 		docker image rm -f "$(IMAGE_REPO):$(IMAGE_TAG)"
 		docker image prune -f
 clean-infra:
+		$(POETRYRUN) \
 		aws cloudformation delete-stack \
 			--stack-name $(CLOUDFORMATION_STACK_NAME) \
 		    --region $(AWS_REGION)
@@ -85,9 +91,11 @@ gen-image:
 		$(MAKE) -f $(MAKEFILE) clean
 
 get-ami:
-		@python $(SCRIPTS_FOLDER)/latest_base_ami.py $(AWS_REGION)
+		@$(POETRYRUN) \
+		python $(SCRIPTS_FOLDER)/latest_base_ami.py $(AWS_REGION)
 
 import-keypair:
+		$(POETRYRUN) \
 		aws ec2 import-key-pair \
 			--key-name $(AWS_KEYPAIR_NAME) \
 			--region $(AWS_REGION) \
@@ -99,7 +107,7 @@ push-image:
 test:
 		$(GOTEST) -count=1 -v ./...
 test-cf:
-		taskcat -c $(CLOUDFORMATION_TASKCAT_FILE)
+		$(POETRYRUN) taskcat -c $(CLOUDFORMATION_TASKCAT_FILE)
 test-role:
 		cd $(ANSIBLE_FOLDER)/roles/$(ANSIBLE_ROLE); \
-			molecule test
+			$(POETRYRUN) molecule test
