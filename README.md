@@ -46,7 +46,7 @@ $ poetry up
 
 Import your Public Key to AWS to create an EC2 Keypair which will be used through all instances in the cluster:
 ```bash
-$ make import-keypair AWS_REGION=us-west-2 AWS_KEYPAIR_NAME=mykey PUBLIC_KEY_FILE=/path/to/key.pub
+$ make import-keypair AWS_KEYPAIR_NAME=mykey PUBLIC_KEY_FILE=/path/to/key.pub
 ```
 
 If you already have a Kubernetes cluster running, you can jump to [Deploying API ](README.md#deploying-api)
@@ -68,12 +68,12 @@ There is a [Cloudformation template](infra/cloudformation/templates/packer.yml) 
 
 To bootstrap Packer IAM credentials through the Cloudformation template, run:
 ```bash
-$ make packer-creds AWS_REGION=us-west-2 CLOUDFORMATION_STACK_NAME=packer-creds
+$ make packer-creds CLOUDFORMATION_STACK_NAME=packer-creds
 ```
 
 Get the AWS Access Key and Secret Key from the generated template by running:
 ```bash
-$ make get-packer-creds AWS_REGION=us-west-2 CLOUDFORMATION_STACK_NAME=packer-creds
+$ make get-packer-creds CLOUDFORMATION_STACK_NAME=packer-creds
 [
     {
         "Param": "PACKER_AWS_SECRET_KEY",
@@ -88,18 +88,18 @@ $ make get-packer-creds AWS_REGION=us-west-2 CLOUDFORMATION_STACK_NAME=packer-cr
 
 With Packer installed and credentials set up, you can bake the AMI using the credentials from the previous output:
 ```bash
-$ make build-ami AWS_REGION=us-west-2 PACKER_AWS_ACCESS_KEY="YOURACCESSKEY" PACKER_AWS_SECRET_KEY="YOURSECRETKEY"
+$ make build-ami PACKER_AWS_ACCESS_KEY="YOURACCESSKEY" PACKER_AWS_SECRET_KEY="YOURSECRETKEY"
 ```
 
 A [python script](scripts/latest_base_ami.py) was created to check if your AMI was created successfully and always show the latest of them:
 ```bash
-$ make get-ami AWS_REGION=us-west-2
+$ make get-ami
 ami-y0uram1idw1llb3h3re
 ```
 
 *OPTIONAL: With your AMI created, you can remove Packer Cloudformation stack:*
 ```bash
-$ make clean-cf AWS_REGION=us-west-2 CLOUDFORMATION_STACK_NAME=packer-creds
+$ make clean-cf CLOUDFORMATION_STACK_NAME=packer-creds
 ```
 
 <br>
