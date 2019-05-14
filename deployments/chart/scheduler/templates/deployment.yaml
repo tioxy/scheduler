@@ -47,7 +47,7 @@ spec:
         - name: GIN_MODE
           value: release
         {{ end }}
-      {{ if .Values.ingress.enabled }}
+      {{ if .Values.rbac.enabled }}
       serviceAccountName: {{ .Release.Name }}
       automountServiceAccountToken: true
       {{ end }}
