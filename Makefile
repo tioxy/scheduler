@@ -93,6 +93,12 @@ gen-image:
 get-ami:
 		@$(POETRYRUN) \
 		python $(SCRIPTS_FOLDER)/latest_base_ami.py $(AWS_REGION)
+get-packer-creds:
+		@$(POETRYRUN) \
+		aws cloudformation describe-stacks \
+		    --stack-name $(CLOUDFORMATION_STACK_NAME) \
+			--region $(AWS_REGION) \
+			--query 'Stacks[0].Outputs[].{Param:Description,Value:OutputValue}'
 
 import-keypair:
 		$(POETRYRUN) \
@@ -100,6 +106,14 @@ import-keypair:
 			--key-name $(AWS_KEYPAIR_NAME) \
 			--region $(AWS_REGION) \
 			--public-key-material file://$(PUBLIC_KEY_FILE)
+
+packer-creds:
+		$(POETRYRUN) \
+		aws cloudformation deploy \
+		    --stack-name $(CLOUDFORMATION_STACK_NAME) \
+		    --region $(AWS_REGION) \
+		    --capabilities CAPABILITY_NAMED_IAM \
+		    --template-file $(CLOUDFORMATION_FOLDER)/templates/packer.yml
 
 push-image:
 		docker image push "$(IMAGE_REPO):$(IMAGE_TAG)"
