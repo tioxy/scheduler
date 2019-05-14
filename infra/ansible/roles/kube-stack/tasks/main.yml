@@ -30,15 +30,41 @@
     state: present
   become: true
 
+- name: Check helm binary
+  stat:
+    path: /usr/bin/helm
+  register: helm_bin
+  become: true
+
+- name: Warn about binary existence
+  debug:
+    msg: Helm binary already exists
+  when: helm_bin.stat.exists
+
+- name: Download helm setup script
+  get_url:
+    url: https://git.io/get_helm.sh
+    dest: /opt/install-helm.sh
+    mode: 0755
+  become: true
+  when: not helm_bin.stat.exists
+
+- name: Install helm
+  command: /opt/install-helm.sh
+  become: true
+  when: not helm_bin.stat.exists
+
+- name: Install helm
+  copy:
+    src: /usr/local/bin/helm
+    dest: /usr/bin/helm
+    remote_src: true
+  become: true
+  when: not helm_bin.stat.exists
+
 - name: Prevent kube packages to update
   dpkg_selections:
     name: "{{ item }}"
     selection: hold
   loop: "{{ kube_packages }}"
-  become: true
-
-- name: Copy kubeadm-config to host
-  copy:
-    src: kubeadm-config.yml
-    dest: /opt/kubeadm-config.yml
   become: true

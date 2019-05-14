@@ -5,6 +5,7 @@ kube_requirements:
   - apt-transport-https
   - curl
   - cloud-init
+  - openssl
 kube_packages:
   - kubelet
   - kubeadm

@@ -1,7 +1,7 @@
 kube-stack
 =========
 
-Installs [Kubectl](https://github.com/kubernetes/kubectl), [Kubelet](https://github.com/kubernetes/kubelet) and [Kubeadm](https://github.com/kubernetes/kubeadm).
+Installs [Kubectl](https://github.com/kubernetes/kubectl), [Kubelet](https://github.com/kubernetes/kubelet), [Kubeadm](https://github.com/kubernetes/kubeadm) and [Helm](https://github.com/helm/helm).
 
 Requirements
 ------------
