@@ -58,7 +58,7 @@ build-ami:
 			-var 'instance_type=t3.micro' \
 			-var 'ansible_playbook_base=$(ANSIBLE_FOLDER)/base.yml' \
 			$(PACKER_FOLDER)/$(PACKER_DEFAULT_DISTRO)-base.json
-build-infra:
+build-cluster:
 		$(POETRYRUN) \
 		aws cloudformation deploy \
 		    --stack-name $(CLOUDFORMATION_STACK_NAME) \
