@@ -7,7 +7,7 @@ Scheduler is an API which abstracts the concepts of Kubernetes Jobs and CronJobs
 - [Getting Started](README.md#getting-started)
     - [Baking Image](README.md#baking-image)
     - [Deploying Infrastructure](README.md#deploying-infrastructure)
-    - Deploying API
+    - [Deploying API](README.md#deploying-api)
 - Local Development
     - Testing
         - Infrastructure
@@ -123,10 +123,45 @@ The average time to deploy the whole infrastructure is 13 minutes, made of:
 - Master & Worker node ≈ 5 min
 - Tiller & cluster-autoscaler ≈ 1 min
 
+*OPTIONAL: If you want to clean the Cloudformation created from **make build-cluster**:*
+```bash
+$ make clean-cf
+```
+
 <br>
 
 ### [Deploying API](#deploying-api)
 
-WIP
+The scheduler is deployed using a Helm Chart which works on any Kubernetes cluster with Tiller successfully deployed. The chart folder is located at ```deployments/chart/scheduler/```. There is a [documentation](deployments/chart/scheduler/README.md) of Chart Values if you need to customize them.
+
+Installing the scheduler and exposing it through a LoadBalancer *(Balancers are automatically created by your Cloud Provider if the cluster is configured properly)*:
+```bash
+$ helm upgrade --install scheduler deployments/chart/scheduler --namespace default --set service.type=LoadBalancer
+```
+
+If you want a raw installation to check if everything is running (recommended for Minikube installation):
+```bash
+$ helm upgrade --install scheduler deployments/chart/scheduler --namespace default
+```
+
+Testing locally with your Minikube requires Service port-forward using kubectl:
+```bash
+$ kubectl port-forward svc/scheduler 8080:8080 --namespace default
+
+$ curl http://localhost:8080/healthz
+{"message":"ok","status":200}
+```
+
+*OPTIONAL: With your kubectl configured, you can delete the Scheduler from your cluster:*
+```bash
+$ helm delete --purge scheduler
+```
 
 <br>
+
+
+## [Local Development](#local-development)
+
+-----
+
+WIP
