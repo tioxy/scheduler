@@ -62,6 +62,8 @@ Resources:
 
 Outputs:
   AccessKey:
+    Description: PACKER_AWS_ACCESS_KEY
     Value: !Ref PackerAccessKey
   SecretKey:
+    Description: PACKER_AWS_SECRET_KEY
     Value: !GetAtt PackerAccessKey.SecretAccessKey
