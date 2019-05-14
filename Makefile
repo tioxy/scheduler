@@ -78,7 +78,7 @@ clean:
 clean-image:
 		docker image rm -f "$(IMAGE_REPO):$(IMAGE_TAG)"
 		docker image prune -f
-clean-infra:
+clean-cf:
 		$(POETRYRUN) \
 		aws cloudformation delete-stack \
 			--stack-name $(CLOUDFORMATION_STACK_NAME) \
