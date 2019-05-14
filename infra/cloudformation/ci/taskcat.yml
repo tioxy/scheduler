@@ -14,3 +14,4 @@ tests:
     regions:
       - us-west-2
     template_file: packer.yml
+    parameter_input: packer-iam.json

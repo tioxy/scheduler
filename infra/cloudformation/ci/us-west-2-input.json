@@ -16,11 +16,23 @@
         "ParameterValue": "t3.medium"
     },
     {
+        "ParameterKey": "NodeInstanceSize",
+        "ParameterValue": "t3.medium"
+    },
+    {
         "ParameterKey": "KeyPairName",
         "ParameterValue": "se-devops-test"
     },
     {
         "ParameterKey": "InstanceAMI",
         "ParameterValue": "ami-04d80a559c47603e4"
+    },
+    {
+        "ParameterKey": "KubeadmJoinToken",
+        "ParameterValue": "token1.tokentokentoken1"
+    },
+    {
+        "ParameterKey": "KubernetesClusterName",
+        "ParameterValue": "kubernetes-scheduler"
     }
 ]
