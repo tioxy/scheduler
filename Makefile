@@ -111,3 +111,6 @@ test-cf:
 test-role:
 		cd $(ANSIBLE_FOLDER)/roles/$(ANSIBLE_ROLE); \
 			$(POETRYRUN) molecule test
+test-roles:
+		$(MAKE) -f $(MAKEFILE) test-role ANSIBLE_ROLE=kube-stack
+		$(MAKE) -f $(MAKEFILE) test-role ANSIBLE_ROLE=docker
