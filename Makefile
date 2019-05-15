@@ -36,6 +36,8 @@ ANSIBLE_ROLE=kube-stack
 
 SCRIPTS_FOLDER=scripts
 
+SCHEDULER_ENDPOINT=http://localhost:8080
+
 all: test build
 
 build: 
@@ -128,3 +130,18 @@ test-role:
 test-roles:
 		$(MAKE) -f $(MAKEFILE) test-role ANSIBLE_ROLE=kube-stack
 		$(MAKE) -f $(MAKEFILE) test-role ANSIBLE_ROLE=docker
+test-e2e:
+		# Test SimpleJob
+		$(POETRYRUN) python $(SCRIPTS_FOLDER)/simplejob.py create $(SCHEDULER_ENDPOINT)
+		$(POETRYRUN) python $(SCRIPTS_FOLDER)/simplejob.py list_all $(SCHEDULER_ENDPOINT)
+		$(POETRYRUN) python $(SCRIPTS_FOLDER)/simplejob.py list_default $(SCHEDULER_ENDPOINT)
+		$(POETRYRUN) python $(SCRIPTS_FOLDER)/simplejob.py fetch $(SCHEDULER_ENDPOINT)
+		$(POETRYRUN) python $(SCRIPTS_FOLDER)/simplejob.py delete $(SCHEDULER_ENDPOINT)
+		# Test Scheduled SimpleJob
+		$(POETRYRUN) python $(SCRIPTS_FOLDER)/simplejob.py create_scheduled $(SCHEDULER_ENDPOINT)
+		$(POETRYRUN) python $(SCRIPTS_FOLDER)/simplejob.py list_all_scheduled $(SCHEDULER_ENDPOINT)
+		$(POETRYRUN) python $(SCRIPTS_FOLDER)/simplejob.py list_default_scheduled $(SCHEDULER_ENDPOINT)
+		$(POETRYRUN) python $(SCRIPTS_FOLDER)/simplejob.py fetch_scheduled $(SCHEDULER_ENDPOINT)
+		$(POETRYRUN) python $(SCRIPTS_FOLDER)/simplejob.py update_scheduled $(SCHEDULER_ENDPOINT)
+		$(POETRYRUN) python $(SCRIPTS_FOLDER)/simplejob.py fetch_scheduled $(SCHEDULER_ENDPOINT)
+		$(POETRYRUN) python $(SCRIPTS_FOLDER)/simplejob.py delete_scheduled $(SCHEDULER_ENDPOINT)
