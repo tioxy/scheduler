@@ -39,6 +39,19 @@ pip install --upgrade poetry
 
 -----
 
+Get the scheduler source code:
+```bash
+$ go get -u github.com/tioxy/scheduler/...
+```
+
+Check your **GOPATH** variable by running:
+```bash
+$ go env | grep -i GOPATH
+GOPATH="/home/tioxy/go"
+
+$ cd $GOPATH/src/github.com/tioxy/scheduler
+```
+
 Make sure that your Poetry environment is up and running:
 ```bash
 $ poetry up
