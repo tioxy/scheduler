@@ -8,6 +8,7 @@ Scheduler is an API which abstracts the concepts of Kubernetes Jobs and CronJobs
     - [Baking Image](README.md#baking-image)
     - [Deploying Infrastructure](README.md#deploying-infrastructure)
     - [Deploying API](README.md#deploying-api)
+- [Concepts](README.md#concepts)
 - [Local Development](README.md#local-development)
     - [Infrastructure Tests](README.md#infrastructure-tests)
     - [API Tests](README.md#api-tests)
@@ -116,7 +117,7 @@ There is a [Cloudformation template](infra/cloudformation/templates/stack.yml) t
 $ make build-cluster AWS_KEYPAIR_NAME=mykey PACKER_BASE_AMI_ID=$(make get-ami)
 ```
 
-This template support multiple parameters like *Master Instance Size* and *Kubeadm Token*, but the defaults should support most deployments. If you want to customize it, deploy the [Cloudformation template](infra/cloudformation/templates/stack.yml) manually through the console or using [aws cloudformation deploy](https://docs.aws.amazon.com/cli/latest/reference/cloudformation/deploy/index.html).
+This template supports multiple parameters like *Master Instance Size* and *Kubeadm Token*, but the defaults should support most deployments. If you want to customize it, deploy the [Cloudformation template](infra/cloudformation/templates/stack.yml) manually through the console or using [aws cloudformation deploy](https://docs.aws.amazon.com/cli/latest/reference/cloudformation/deploy/index.html).
 
 The average time to deploy the whole infrastructure is **13 minutes**, made of:
 - Cloudformation ≈ **7 min**
@@ -127,6 +128,8 @@ The average time to deploy the whole infrastructure is **13 minutes**, made of:
 ```bash
 $ make clean-cf
 ```
+
+OBS: To deploy the API you must have your kubectl configured. This Cloudformation only bootstraps the cluster, so it requires you to create your kubeconfig. You may need to connect via SSH to your Master Node to run the next commands, so check the Security Group Inbound rules.
 
 <br>
 
@@ -183,6 +186,66 @@ $ helm delete --purge scheduler
 
 <br>
 
+## [Concepts](#concepts)
+
+-----
+
+### [Swagger API reference - WIP](https://app.swaggerhub.com/apis/tioxy/scheduler/1.0.0)
+
+### SimpleJob
+A SimpleJob is an abstraction on top of CronJobs and Jobs from Kubernetes. The SimpleJob can be separated in:
+- **/jobs:** Run once and immutable
+- **/scheduled:** Run multiple times(cron syntax) and mutable 
+
+```go
+type SimpleJob struct {
+	Name       string         `json:"name"`
+	Namespace  string         `json:"namespace"`
+	Containers []v1.Container `json:"containers"`
+	MaxRetries int32          `json:"maxRetries"`
+	Cron       string         `json:"cron,omitempty"`
+}
+
+// v1.Container is the Container object used in Pods from Kubernetes API
+```
+
+An example SimpleJob to calculate first 2000 numbers of pi:
+```json
+{
+    "name": "pi",
+    "namespace": "default",
+    "maxRetries": 4,
+    "containers": [
+        {
+            "name": "pi",
+            "image": "perl",
+            "command": ["perl", "-Mbignum=bpi", "-wle", "print bpi(2000)"]
+        }
+    ]
+}
+```
+
+Now the same SimpleJob, but scheduled to run every day at midnight:
+```json
+{
+    "name": "pi",
+    "namespace": "default",
+    "maxRetries": 4,
+    "cron": "0 0 * * *",
+    "containers": [
+        {
+            "name": "pi",
+            "image": "perl",
+            "command": ["perl", "-Mbignum=bpi", "-wle", "print bpi(2000)"]
+        }
+    ]
+}
+```
+
+OBS: The **"cron"** key inside your SimpleJob will only be used if you are interacting with **/scheduled** endpoints, otherwise it doesn't matter.
+
+
+<br>
 
 ## [Local Development](#local-development)
 
