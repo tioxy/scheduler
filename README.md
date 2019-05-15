@@ -8,10 +8,9 @@ Scheduler is an API which abstracts the concepts of Kubernetes Jobs and CronJobs
     - [Baking Image](README.md#baking-image)
     - [Deploying Infrastructure](README.md#deploying-infrastructure)
     - [Deploying API](README.md#deploying-api)
-- Local Development
-    - Testing
-        - Infrastructure
-        - API
+- [Local Development](README.md#local-development)
+    - [Infrastructure Tests](README.md#infrastructure-tests)
+    - [API Tests](README.md#api-tests)
 
 ## [Installation](#installation)
 -----
@@ -189,4 +188,39 @@ $ helm delete --purge scheduler
 
 -----
 
-WIP
+## [Infrastructure Tests](#infrastructure-tests)
+
+**Ansible**
+
+[Molecule](https://molecule.readthedocs.io/en/stable/) is used to test roles.
+
+- Test single role
+```bash
+$ make test-role ANSIBLE_ROLE=roleName
+```
+
+- Test all roles 
+```bash
+$ make test-roles
+```
+
+**Cloudformation**
+
+[Taskcat](https://github.com/aws-quickstart/taskcat) is used to test stacks.
+
+- Test all stacks
+```bash
+$ make test-cf
+```
+
+## [API Tests](#api-tests)
+
+- Unit test
+```
+make test
+```
+
+- E2E test with endpoint
+```
+make test-e2e SCHEDULER_ENDPOINT=http://localhost:8080
+```
