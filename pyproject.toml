@@ -21,7 +21,7 @@ molecule = "^2.20"
 taskcat = "^0.8.32"
 awscli = "^1.16"
 cryptography = "^2.6"
-paramiko = "^2.4"
+paramiko = "^2.10"
 
 [tool.poetry.dev-dependencies]
 
